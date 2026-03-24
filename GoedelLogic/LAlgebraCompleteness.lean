@@ -144,7 +144,7 @@ instance : LAlgebra (Quotient (@setoid_formula Γ)) :=
       induction q1 using Quotient.ind
       induction q2 using Quotient.ind
       apply Quotient.sound
-      simp [HasEquiv.Equiv, Setoid.r, equiv_and]
+      simp only [HasEquiv.Equiv, Setoid.r, equiv_and]
       apply And.intro H12 H21
     sup := or_lt
     le_sup_left := λ q1 q2 => by
@@ -213,10 +213,10 @@ instance : LAlgebra (Quotient (@setoid_formula Γ)) :=
       simp only [HasEquiv.Equiv, Setoid.r, equiv_and]
       apply And.intro
       · apply Nonempty.intro
-        let h : Γ ∪ {(ϕ ⇒ ψ) ∨∨ (ψ ⇒ ϕ)} ⊢ ⊤ := by exact Proof.exfalso
+        have h : Γ ∪ {(ϕ ⇒ ψ) ∨∨ (ψ ⇒ ϕ)} ⊢ ⊤ := Proof.exfalso
         exact Proof.deductionTheorem_left h
       · apply Nonempty.intro
-        let h : Γ ∪ {⊤} ⊢ (ϕ ⇒ ψ) ∨∨ (ψ ⇒ ϕ) := by exact Proof.linearity
+        have h : Γ ∪ {⊤} ⊢ (ϕ ⇒ ψ) ∨∨ (ψ ⇒ ϕ) := Proof.linearity
         exact Proof.deductionTheorem_left h }
 
 lemma equiv_top (ϕ : Formula)  :
@@ -258,17 +258,17 @@ lemma h_lt_interpretation :
         simp only [Bot.bot]
     | and ψ χ ih1 ih2 =>
         have Haux : Quotient.mk (@setoid_formula Γ) (ψ∧∧χ)
-        = and_lt (Quotient.mk setoid_formula ψ) (Quotient.mk setoid_formula χ) := by rfl
+        = and_lt (Quotient.mk setoid_formula ψ) (Quotient.mk setoid_formula χ) := rfl
         rw [h_lt, AlgInterpretation, Haux, <-ih1, <-ih2] -- changed from simp only [Inf.inf]
         rfl
     | or ψ χ ih1 ih2 =>
         have Haux : Quotient.mk (@setoid_formula Γ) (ψ∨∨χ)
-        = or_lt (Quotient.mk setoid_formula ψ) (Quotient.mk setoid_formula χ) := by rfl
+        = or_lt (Quotient.mk setoid_formula ψ) (Quotient.mk setoid_formula χ) := rfl
         rw [h_lt, AlgInterpretation, Haux, <-ih1, <-ih2] -- changed from simp only [Sup.sup]
         rfl
     | implication ψ χ ih1 ih2 =>
         have Haux : Quotient.mk (@setoid_formula Γ) (ψ⇒χ)
-        = to_lt (Quotient.mk setoid_formula ψ) (Quotient.mk setoid_formula χ) := by rfl
+        = to_lt (Quotient.mk setoid_formula ψ) (Quotient.mk setoid_formula χ) := rfl
         rw [h_lt, AlgInterpretation, Haux, <-ih1, <-ih2]
         rfl
 

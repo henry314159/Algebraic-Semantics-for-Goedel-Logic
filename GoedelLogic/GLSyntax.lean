@@ -11,17 +11,6 @@ import Mathlib.Data.Finset.Basic
 set_option autoImplicit false
 
 -- Added linearity
-inductive Axiom : Formula → Type where
-| contractionDisj {ϕ} : Axiom (ϕ ∨∨ ϕ ⇒ ϕ)
-| contractionConj {ϕ} : Axiom (ϕ ⇒ ϕ ∧∧ ϕ)
-| weakeningDisj {ϕ ψ} : Axiom (ϕ ⇒ ϕ ∨∨ ψ)
-| weakeningConj {ϕ ψ} : Axiom (ϕ ∧∧ ψ ⇒ ϕ)
-| permutationDisj {ϕ ψ} : Axiom (ϕ ∨∨ ψ ⇒ ψ ∨∨ ϕ)
-| permutationConj {ϕ ψ} : Axiom (ϕ ∧∧ ψ ⇒ ψ ∧∧ ϕ)
-| exfalso {ϕ} : Axiom (⊥ ⇒ ϕ)
-| linearity {ϕ ψ} : Axiom ((ϕ ⇒ ψ) ∨∨ (ψ ⇒ ϕ))
-
--- Added linearity
 inductive Proof (Γ : Set Formula) : Formula → Type where
 | premise {ϕ} : ϕ ∈ Γ → Proof Γ ϕ
 | contractionDisj {ϕ} : Proof Γ (ϕ ∨∨ ϕ ⇒ ϕ)

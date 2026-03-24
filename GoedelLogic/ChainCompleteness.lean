@@ -317,7 +317,7 @@ lemma quotient_chain {hF : filter F}: prime_filter F → chain (Quotient (setoid
     exact top_mem_filter (Hfilter := hF)
   exact p.right _ _ h1
 
-def ideal (I : Set α) := Set.Nonempty I ∧ ∀ (x y : α), x ∈ I → y ∈ I → x ⊔ y ∈ I
+--def ideal (I : Set α) := Set.Nonempty I ∧ ∀ (x y : α), x ∈ I → y ∈ I → x ⊔ y ∈ I
 
 -- filter_quot_var is the valuation that will allow us to derive a contradiction in the completeness proof
 def filter_quot_var {F : Set (Quotient (@setoid_formula Γ))} {hF: filter F} (v : Var) : Quotient (setoid_filter (α := Quotient setoid_formula) (hF := hF)) :=
@@ -375,7 +375,7 @@ lemma chain_contradicting_valuation (ϕ : Formula) : ¬Nonempty (Γ ⊢ ϕ) →
       exact @le_refl _ _ ϕModΓ
     exact notTrueInLTAlgebra le_top h
   -- there exists a filter F that separates top and ϕ
-  have hF : ∃F, prime_filter F ∧ ϕModΓ ∉ F := by exact super_prime_filter_cor1 _ hNotTop
+  have hF : ∃F, prime_filter F ∧ ϕModΓ ∉ F := super_prime_filter_cor1 _ hNotTop
   obtain ⟨F, hF⟩ := hF
   have hΓ : set_true_in_alg_model (@filter_quot_var _ _ hF.left.left.left) Γ := by
     -- this is true by construction

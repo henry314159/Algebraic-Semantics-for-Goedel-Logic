@@ -6,7 +6,7 @@ def chain (α : Type) [LAlgebra α] : Prop := ∀ (a b : α), a ≤ b ∨ b ≤ 
 -- Define chain semantic consequence
 def chain_sem_conseq (Γ : Set Formula) (ϕ : Formula): Prop :=
   ∀ (α : Type) [LAlgebra α] (I : Var → α),
-  @chain α _ ∧ set_true_in_alg_model I Γ → true_in_alg_model I ϕ
+  chain α ∧ set_true_in_alg_model I Γ → true_in_alg_model I ϕ
 
 -- Soundness for chains follows immediately from soundness for LAlgebras,
 -- because chains are LAlgebras

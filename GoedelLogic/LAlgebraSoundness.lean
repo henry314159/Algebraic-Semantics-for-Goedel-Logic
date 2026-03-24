@@ -22,9 +22,9 @@ lemma alg_compl {ϕ : Formula} (I : Var → α) : AlgInterpretation I (Formula.n
 
 lemma alg_top (I : Var → α) : AlgInterpretation I Formula.top = Top.top :=
   by
-    have Haux1 : AlgInterpretation I ⊤ = AlgInterpretation I ⊥ ⇨ AlgInterpretation I ⊥ := by rfl
-    have Haux2 : AlgInterpretation I ⊥ = Bot.bot := by rfl
-    simp only [Haux1, Haux2, himp_self]
+    have Haux1 : AlgInterpretation I ⊤ = AlgInterpretation I ⊥ ⇨ AlgInterpretation I ⊥ := rfl
+    have Haux2 : AlgInterpretation I ⊥ = Bot.bot := rfl
+    simp [Haux1, Haux2]
 
 -- A Formula ϕ is interpreted as true iff ϕ is sent to ⊤
 def true_in_alg_model (I : Var → α) (ϕ : Formula) : Prop := AlgInterpretation I ϕ = Top.top
@@ -53,11 +53,11 @@ lemma empty_conseq_alg_valid (ϕ : Formula) :
   alg_sem_conseq ∅ ϕ ↔ alg_valid ϕ :=
   by
     apply Iff.intro
-    · intro Hconseq _ _ I
+    · intro Hconseq _ _ _
       simp [alg_sem_conseq, set_true_in_alg_model] at Hconseq
-      exact Hconseq _ I
-    · intro Halgvalid _ _ I _
-      exact Halgvalid _ I
+      exact Hconseq _ _
+    · intro Halgvalid _ _ _ _
+      exact Halgvalid _ _
 
 lemma elem_alg_sem_conseq (Γ : Set Formula) (ϕ : Formula) : ϕ ∈ Γ → alg_sem_conseq Γ ϕ :=
   by
@@ -76,61 +76,73 @@ theorem soundness_lalg {Γ : Set Formula} (ϕ : Formula) : Nonempty (Γ ⊢ ϕ) 
     intro Htheorem
     let Htheorem' := Classical.choice Htheorem
     induction Htheorem' with
-    | @premise ϕ Hin => intro _ _ _ Hsettrue
-                        exact Hsettrue ϕ Hin
-    | @contractionDisj ψ => intro _ _ _ _
-                            simp [true_in_alg_model, AlgInterpretation]
-    | @contractionConj ψ => intro _ _ _ _
-                            simp [true_in_alg_model, AlgInterpretation]
-    | @weakeningDisj ψ χ => intro _ _ _ _
-                            simp [true_in_alg_model, AlgInterpretation]
-    | @weakeningConj ψ χ => intro _ _ _ _
-                            simp [true_in_alg_model, AlgInterpretation]
-    | @permutationDisj ψ χ => intro _ _ _ _
-                              simp [true_in_alg_model, AlgInterpretation]
-    | @permutationConj ψ χ => intro _ _ _ _
-                              simp [true_in_alg_model, AlgInterpretation]
-    | @exfalso ψ => intro _ _ _ _
-                    simp [true_in_alg_model, AlgInterpretation]
-    | @linearity ψ χ => intro _ _ _ _
-                        rw [true_in_alg_model, AlgInterpretation]
-                        apply LAlgebra.l_axiom
-    | @modusPonens ψ χ p1 p2 ih1 ih2 => intro _ _ _ Hsettrue
-                                        simp at ih1
-                                        simp at ih2
-                                        specialize ih1 p1 _ _ Hsettrue
-                                        specialize ih2 p2 _ _ Hsettrue
-                                        rw [true_in_alg_model, AlgInterpretation, ih1] at ih2
-                                        simp at ih2
-                                        exact ih2
-    | @syllogism ψ χ γ p1 p2 ih1 ih2 => intro _ _ _ Hsettrue
-                                        simp at ih1
-                                        simp at ih2
-                                        specialize ih1 p1 _ _ Hsettrue
-                                        specialize ih2 p2 _ _ Hsettrue
-                                        rw [true_in_alg_model, AlgInterpretation] at ih1
-                                        simp at ih1
-                                        rw [true_in_alg_model, AlgInterpretation] at ih2
-                                        simp at ih2
-                                        rw [true_in_alg_model, AlgInterpretation]
-                                        simp
-                                        apply le_trans ih1 ih2
-    | @exportation ψ χ γ p ih => intro _ _ _ Hsettrue
-                                 simp at ih
-                                 specialize ih p _ _ Hsettrue
-                                 simp [true_in_alg_model, AlgInterpretation] at ih
-                                 simp [true_in_alg_model, AlgInterpretation]
-                                 exact ih
-    | @importation ψ χ γ p ih => intro _ _ _ Hsettrue
-                                 simp at ih
-                                 specialize ih p _ _ Hsettrue
-                                 simp [true_in_alg_model, AlgInterpretation] at ih
-                                 simp [true_in_alg_model, AlgInterpretation]
-                                 exact ih
-    | @expansion ψ χ γ p ih => intro _ _ _ Hsettrue
-                               simp at ih
-                               specialize ih p _ _ Hsettrue
-                               simp [true_in_alg_model, AlgInterpretation] at ih
-                               rw [true_in_alg_model, AlgInterpretation, AlgInterpretation, himp_eq_top_iff]
-                               apply sup_le_sup_left
-                               exact ih
+    | @premise ϕ Hin =>
+        intro _ _ _ Hsettrue
+        exact Hsettrue ϕ Hin
+    | @contractionDisj ψ =>
+        intro _ _ _ _
+        simp [true_in_alg_model, AlgInterpretation]
+    | @contractionConj ψ =>
+        intro _ _ _ _
+        simp [true_in_alg_model, AlgInterpretation]
+    | @weakeningDisj ψ χ =>
+        intro _ _ _ _
+        simp [true_in_alg_model, AlgInterpretation]
+    | @weakeningConj ψ χ =>
+        intro _ _ _ _
+        simp [true_in_alg_model, AlgInterpretation]
+    | @permutationDisj ψ χ =>
+        intro _ _ _ _
+        simp [true_in_alg_model, AlgInterpretation]
+    | @permutationConj ψ χ =>
+        intro _ _ _ _
+        simp [true_in_alg_model, AlgInterpretation]
+    | @exfalso ψ =>
+        intro _ _ _ _
+        simp [true_in_alg_model, AlgInterpretation]
+    | @linearity ψ χ =>
+        intro _ _ _ _
+        rw [true_in_alg_model, AlgInterpretation]
+        apply LAlgebra.l_axiom
+    | @modusPonens ψ χ p1 p2 ih1 ih2 =>
+        intro _ _ _ Hsettrue
+        simp at ih1
+        simp at ih2
+        specialize ih1 p1 _ _ Hsettrue
+        specialize ih2 p2 _ _ Hsettrue
+        rw [true_in_alg_model, AlgInterpretation, ih1] at ih2
+        simp at ih2
+        exact ih2
+    | @syllogism ψ χ γ p1 p2 ih1 ih2 =>
+        intro _ _ _ Hsettrue
+        simp at ih1
+        simp at ih2
+        specialize ih1 p1 _ _ Hsettrue
+        specialize ih2 p2 _ _ Hsettrue
+        rw [true_in_alg_model, AlgInterpretation] at ih1
+        simp at ih1
+        rw [true_in_alg_model, AlgInterpretation] at ih2
+        simp at ih2
+        rw [true_in_alg_model, AlgInterpretation]
+        simp
+        apply le_trans ih1 ih2
+    | @exportation ψ χ γ p ih =>
+        intro _ _ _ Hsettrue
+        simp at ih
+        specialize ih p _ _ Hsettrue
+        simp [true_in_alg_model, AlgInterpretation] at *
+        exact ih
+    | @importation ψ χ γ p ih =>
+        intro _ _ _ Hsettrue
+        simp at ih
+        specialize ih p _ _ Hsettrue
+        simp [true_in_alg_model, AlgInterpretation] at *
+        exact ih
+    | @expansion ψ χ γ p ih =>
+        intro _ _ _ Hsettrue
+        simp at ih
+        specialize ih p _ _ Hsettrue
+        simp [true_in_alg_model, AlgInterpretation] at ih
+        rw [true_in_alg_model, AlgInterpretation, AlgInterpretation, himp_eq_top_iff]
+        apply sup_le_sup_left
+        exact ih

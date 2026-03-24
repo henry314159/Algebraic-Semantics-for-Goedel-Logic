@@ -40,8 +40,7 @@ def pairing (x y : ℕ) := (x + y) * (x + y + 1) + 2 * x
 lemma pairing_0 {x y : ℕ} : pairing x y = 0 → x = 0 ∧ y = 0 :=
   by
     intro h
-    simp only [pairing, Nat.add_eq_zero_iff, Nat.mul_eq_zero, Nat.succ_ne_self, and_false, or_false,
-      reduceCtorEq, false_or] at h
+    simp [pairing, Nat.mul_eq_zero] at h
     exact h.left
 /-
 lemma pairing_inj1 (x y z t : ℕ) : pairing x y = pairing z t ↔ x = z ∧ y = t := by
