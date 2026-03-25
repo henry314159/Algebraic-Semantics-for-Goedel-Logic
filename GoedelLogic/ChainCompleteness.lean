@@ -319,14 +319,17 @@ lemma quotient_chain {hF : filter F}: prime_filter F → chain (Quotient (setoid
 
 --def ideal (I : Set α) := Set.Nonempty I ∧ ∀ (x y : α), x ∈ I → y ∈ I → x ⊔ y ∈ I
 
+variable {F : Set (Quotient (@setoid_formula Γ))}
+variable {hF : filter F}
+
 -- filter_quot_var is the valuation that will allow us to derive a contradiction in the completeness proof
-def filter_quot_var {F : Set (Quotient (@setoid_formula Γ))} {hF: filter F} (v : Var) : Quotient (setoid_filter (α := Quotient setoid_formula) (hF := hF)) :=
+def filter_quot_var (v : Var) : Quotient (setoid_filter (α := Quotient setoid_formula) (hF := hF)) :=
   Quotient.mk setoid_filter (h_lt_var v)
 
-def filter_quot {F : Set (Quotient (@setoid_formula Γ))} {hF : filter F} (ϕ : Formula) : Quotient (setoid_filter (α := Quotient setoid_formula) (hF := hF)) :=
+def filter_quot (ϕ : Formula) : Quotient (setoid_filter (α := Quotient setoid_formula) (hF := hF)) :=
   Quotient.mk setoid_filter (h_lt ϕ)
 
-lemma filter_quot_interpretation {F : Set (Quotient (@setoid_formula Γ))} {hF : filter F} :
+lemma filter_quot_interpretation :
   ∀ (ϕ : Formula),  filter_quot ϕ = @AlgInterpretation (Quotient (setoid_filter (α := Quotient (@setoid_formula Γ)) (hF := hF))) _ filter_quot_var ϕ := by
     intro ϕ
     induction ϕ with
@@ -358,26 +361,28 @@ lemma filter_quot_interpretation {F : Set (Quotient (@setoid_formula Γ))} {hF :
                                    rw [filter_quot, AlgInterpretation, h_lt, Haux1, Haux2, <-ih1, <-ih2]
                                    rfl
 
--- Lemma that says filter_quot_var sets Γ to true, but sets ϕ to false
+-- Lemma that says there exists filter F such that filter_quot_var sets Γ to true, but sets ϕ to false
 lemma chain_contradicting_valuation (ϕ : Formula) : ¬Nonempty (Γ ⊢ ϕ) →
   ∃ (F : Set (Quotient (@setoid_formula Γ))) (hF : prime_filter F),
     set_true_in_alg_model (@filter_quot_var _ _ hF.left.left) Γ ∧
     ¬true_in_alg_model (@filter_quot_var _ _ hF.left.left) ϕ := by
-  rw [←true_in_lt]
+
   intro notTrueInLTAlgebra
+  rw [←true_in_lt] at notTrueInLTAlgebra
   let ϕModΓ := @h_lt Γ ϕ
+
   -- hNotTop means that we can find a filter F that separates top and ϕ
   have hNotTop : ϕModΓ ≠ Top.top := by
-    rw [true_in_alg_model, ← h_lt_interpretation ϕ, h_lt, le_antisymm_iff, not_and] at notTrueInLTAlgebra
-    by_contra
-    have h : le_lt Top.top ϕModΓ := by
-      simp only [setoid_formula.eq_1, ←this]
-      exact @le_refl _ _ ϕModΓ
-    exact notTrueInLTAlgebra le_top h
+    simp [true_in_alg_model, ← h_lt_interpretation ϕ, h_lt] at notTrueInLTAlgebra
+    exact notTrueInLTAlgebra
+
   -- there exists a filter F that separates top and ϕ
   have hF : ∃F, prime_filter F ∧ ϕModΓ ∉ F := super_prime_filter_cor1 _ hNotTop
-  obtain ⟨F, hF⟩ := hF
-  have hΓ : set_true_in_alg_model (@filter_quot_var _ _ hF.left.left.left) Γ := by
+  obtain ⟨F, hF1, hF2⟩ := hF
+  let valuation := @filter_quot_var _ _ hF1.left.left
+
+  -- valuation sets all ψ ∈ Γ to true
+  have hΓ : set_true_in_alg_model valuation Γ := by
     -- this is true by construction
     intros ψ hψ
     have hψ : Quotient.mk (@setoid_formula Γ) ψ = Top.top := by
@@ -387,43 +392,43 @@ lemma chain_contradicting_valuation (ϕ : Formula) : ¬Nonempty (Γ ⊢ ϕ) →
     rw [true_in_alg_model, ←filter_quot_interpretation, filter_quot, h_lt]
     apply Quotient.sound
     simp [HasEquiv.Equiv, setoid_filter, hψ, equiv_filter, le]
-    exact @top_mem_filter _ _ _ hF.left.left.left
-  have nhϕ : ¬true_in_alg_model (@filter_quot_var _ _ hF.left.left.left) ϕ := by
+    exact @top_mem_filter _ _ _ hF1.left.left
+
+  -- valuation does not set ϕ to true
+  have nhϕ : ¬true_in_alg_model valuation ϕ := by
     -- it is sufficient to show that ϕModΓModF ≠ ⊤
     rw [true_in_alg_model, ←filter_quot_interpretation]
     -- assume for contradiction that ϕModΓModF = ⊤
     by_contra
     -- we then have ϕModΓ ~ ⊤
-    have ϕEquivTop : equiv_filter (F := F) (Quotient.mk _ ϕ) Top.top := by exact Quotient.exact this
+    have ϕEquivTop : equiv_filter (F := F) (Quotient.mk _ ϕ) Top.top := Quotient.exact this
     -- we can now show that ϕ ∈ F, which is a contradiction
     have ϕInF : ϕModΓ ∈ F := by
       simp [equiv_filter, le] at ϕEquivTop
       exact ϕEquivTop.right
-    exact hF.right ϕInF
-  exists F, hF.left
+    exact hF2 ϕInF
+  exists F, hF1
 
 theorem completeness_chains (ϕ : Formula) : chain_sem_conseq Γ ϕ ↔ Nonempty (Γ ⊢ ϕ) :=
   by
     apply Iff.intro
-    · contrapose
-      intro notTrueInLTAlgebra
+    · intro chainSemConseq
+      by_contra notTrueInLTAlgebra
+
       -- use the lemma chain_contradicting_valuation
       have h : ∃ (F : Set (Quotient (@setoid_formula Γ))) (hF : prime_filter F),
-        set_true_in_alg_model (@filter_quot_var Γ F hF.left.left) Γ ∧
-        ¬true_in_alg_model (@filter_quot_var Γ F hF.left.left) ϕ := by
-        exact chain_contradicting_valuation _ notTrueInLTAlgebra
+        set_true_in_alg_model filter_quot_var Γ ∧
+        ¬true_in_alg_model filter_quot_var ϕ := chain_contradicting_valuation ϕ notTrueInLTAlgebra
       obtain ⟨F, hF, hΓ, nhϕ⟩ := h
-      -- assume for contradiction that Γ ⊨ ϕ under chains
-      by_contra chainSemConseq
-      -- use quotient_chain lemma to assert that LT/F is in fact a chain
-      have hChain : chain (Quotient (@setoid_filter (Quotient (@setoid_formula Γ)) _ _ hF.left.left)) := by
-        exact quotient_chain hF
-      -- the assumption that Γ ⊨ ϕ is specialised to LT/F and filter_quot_var
-      specialize chainSemConseq (Quotient setoid_filter) (@filter_quot_var _ _ hF.left.left)
-      -- show that, under the assumption Γ ⊨ ϕ, we have ϕ is true under filter_quot_var
-      have hϕ : true_in_alg_model (@filter_quot_var _ _ hF.left.left) ϕ := by
+      let valuation := @filter_quot_var _ _ hF.left.left
+
+      -- the assumption that Γ ⊨ ϕ is specialised to LT/F and valuation
+      specialize chainSemConseq (Quotient setoid_filter) valuation
+
+      -- show that, under the assumption Γ ⊨ ϕ, we have ϕ is true under valuation
+      have hϕ : true_in_alg_model valuation ϕ := by
         apply chainSemConseq
-        exact And.intro hChain hΓ
+        exact And.intro (quotient_chain hF) hΓ
       exact nhϕ hϕ
     · exact soundness_chains ϕ
 

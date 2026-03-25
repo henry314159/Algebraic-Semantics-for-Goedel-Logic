@@ -277,7 +277,7 @@ lemma set_true_in_lt :
   @set_true_in_alg_model (Quotient (@setoid_formula Γ)) _ h_lt_var Γ :=
   by
     intro ϕ Hin
-    rw [true_in_alg_model, <-h_lt_interpretation, h_lt, <-equiv_top]
+    rw [true_in_alg_model, ← h_lt_interpretation, h_lt, ← equiv_top]
     apply Nonempty.intro
     exact Proof.premise Hin
 
@@ -288,11 +288,11 @@ lemma true_in_lt (ϕ : Formula) :
     apply Iff.intro
     · intro Htruelt
       apply Nonempty.intro
-      rw [true_in_alg_model, <-h_lt_interpretation, h_lt, <-equiv_top] at Htruelt
+      rw [true_in_alg_model, ← h_lt_interpretation, h_lt, ← equiv_top] at Htruelt
       exact Classical.choice Htruelt
     · intro Hnempty
       rw [equiv_top] at Hnempty
-      rw [true_in_alg_model, <-h_lt_interpretation]
+      rw [true_in_alg_model, ← h_lt_interpretation]
       exact Hnempty
 
 -- The completeness theorem for LAlgebras
@@ -301,6 +301,6 @@ theorem completeness_lalg (ϕ : Formula) :
   by
     apply Iff.intro
     · intro Halg
-      rw [<-true_in_lt]
+      rw [← true_in_lt]
       exact Halg (Quotient (@setoid_formula Γ)) h_lt_var set_true_in_lt
     · exact soundness_lalg ϕ
