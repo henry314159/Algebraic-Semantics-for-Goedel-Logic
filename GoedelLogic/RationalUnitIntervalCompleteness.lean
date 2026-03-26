@@ -225,7 +225,9 @@ lemma embedBot {hChain : chain α} {I : ℕ → α} {hI1 : Function.Bijective I}
   rw [embed, h_inv, embedHelper]
   rfl
 
-lemma mean_le (a : Q) (b : Q) (c : Q) : a ≤ b → a ≤ c → a ≤ mean b c := by sorry
+lemma le_mean (a : Q) (b : Q) (c : Q) : a ≤ b → a ≤ c → a ≤ mean b c := by sorry
+
+lemma mean_lt (a : Q) (b : Q) (c : Q) : a < c → b ≤ c → mean a b < c := by sorry
 
 lemma embedOrderHelper {hChain : chain α} {I : ℕ → α} {hI1 : Function.Bijective I} {hI2 : I01 I}:
   ∀ (n m : ℕ), I n ≤ I m → @embedHelper _ _ hChain _ hI1 hI2 n ≤ @embedHelper _ _ hChain _ hI1 hI2 m := by
@@ -372,16 +374,30 @@ lemma embedOrderHelper {hChain : chain α} {I : ℕ → α} {hI1 : Function.Bije
           have h2 : @embedHelper _ _ hChain _ hI1 hI2 (y1.succ.succ) ≤
                     @embed _ _ hChain _ hI1 hI2 aj2 := ih (Function.invFun I aj2) htemp h2
 
-          have h3 : embedHelper y1.succ.succ ≤ mean (embed ai2) (embed aj2) := mean_le (@embedHelper α _ hChain I hI1 hI2 y1.succ.succ)
-                        (@embed _ _ hChain _ hI1 hI2 ai2)
-                        (@embed _ _ hChain _ hI1 hI2 aj2)
-                        h1 h2
+          have h3 : embedHelper y1.succ.succ ≤ mean (embed ai2) (embed aj2) :=
+            le_mean (@embedHelper _ _ _ _ hI1 hI2 y1.succ.succ)
+                    (@embed _ _ _ _ hI1 hI2 ai2)
+                    (@embed _ _ _ _ hI1 hI2 aj2)
+                    h1 h2
 
           rw [temp2]
           simp only [embed] at h3
           rw [←le_iff_eq_or_lt]
           exact h3
-        · sorry
+        · by_cases h'' : y1.succ.succ = y2.succ.succ
+          · rw [h'']
+            have h'' : (@embedHelper _ _ hChain _ hI1 hI2 y2.succ.succ) = (@embedHelper _ _ hChain _ hI1 hI2 y2.succ.succ) := rfl
+            exact Or.inl h''
+          · have h1 : (@embed _ _ hChain _ hI1 hI2 ai1) < (@embedHelper _ _ hChain _ hI1 hI2 y2.succ.succ) := sorry -- ai < a ≤ b
+            have h2 : (@embed _ _ hChain _ hI1 hI2 aj1) ≤ (@embedHelper _ _ hChain _ hI1 hI2 y2.succ.succ) := sorry -- when define a, b is already defined, so aj ≤ b
+            have h3 : mean (embed ai1) (embed aj1) < embedHelper y2.succ.succ :=
+              mean_lt (@embed _ _ _ _ hI1 hI2 ai1)
+                      (@embed _ _ _ _ hI1 hI2 aj1)
+                      (@embedHelper _ _ _ _ hI1 hI2 y2.succ.succ)
+                      h1 h2
+            rw [temp1]
+            simp only [embed] at h3
+            exact Or.inr h3
 
 lemma embedOrder {hChain : chain α} {I : ℕ → α} {hI1 : Function.Bijective I} {hI2 : I01 I} :
   ∀ (a b : α), a ≤ b → @embed _ _ hChain _ hI1 hI2 a ≤ @embed _ _ hChain _ hI1 hI2 b := by
