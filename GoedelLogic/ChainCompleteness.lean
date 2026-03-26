@@ -12,11 +12,9 @@ def le (x y : α) : Prop := (x ⇨ y) ∈ F
 def equiv_filter (x y : α) := le (F := F) x y ∧ le (F := F) y x
 
 -- Helps to show transitivity of equiv_filter
-lemma trans_helper {hF : filter F} {x y z : α} : x ⇨ y ∈ F → y ⇨ z ∈ F → x ⇨ z ∈ F := by
+lemma trans_helper (hF : filter F) {x y z : α} : x ⇨ y ∈ F → y ⇨ z ∈ F → x ⇨ z ∈ F := by
   intros h1 h2
-  have h3 : (x ⇨ y) ⊓ (y ⇨ z) ∈ F := by exact hF.right.left _ _ h1 h2
-  have h4 : (x ⇨ y) ⊓ (y ⇨ z) ≤ (x ⇨ z) := by exact himp_triangle _ _ _
-  exact hF.right.right _ _ h3 h4
+  exact hF.right.right _ _ (hF.right.left _ _ h1 h2) (himp_triangle _ _ _)
 
 -- Shows that equiv_filter is indeed an equivalence relation
 instance setoid_filter {hF : filter F} : Setoid α :=
@@ -28,10 +26,7 @@ instance setoid_filter {hF : filter F} : Setoid α :=
       λ _ => by
         apply And.symm
         assumption,
-      λ H12 H23 => by
-        apply And.intro
-        · exact trans_helper (hF := hF) H12.left H23.left
-        · exact trans_helper (hF := hF) H23.right H12.right
+      λ H12 H23 => ⟨trans_helper hF H12.left H23.left, trans_helper hF H23.right H12.right⟩
     ⟩
   }
 
@@ -42,20 +37,20 @@ def LAlgebra.or_filter {hF : filter F} (x y : α) := Quotient.mk (setoid_filter 
 lemma or_filter_preserves_equiv {hF : filter F} (x y x' y' : α) :
   equiv_filter (F := F) x x' → equiv_filter (F := F) y y' →
   (LAlgebra.or_filter (hF := hF) x y = LAlgebra.or_filter x' y') := by
-  simp only [equiv_filter, and_imp]
+  simp [equiv_filter]
   intros h1 h2 h3 h4
   apply Quotient.sound
   apply And.intro
   · have h5 : ((x ⇨ x') ⊓ (y ⇨ y')) ≤ (x ⊔ y ⇨ x' ⊔ y') := by
       rw [le_himp_iff, inf_sup_left, inf_right_comm, inf_assoc, inf_left_comm, ← inf_assoc, inf_himp,
-      sup_comm, inf_right_comm, inf_assoc, inf_himp, ← inf_assoc]
+        sup_comm, inf_right_comm, inf_assoc, inf_himp, ← inf_assoc]
       simp
       have h6 : x ⊓ x' ⊓ (y ⇨ y') ≤ x' := by
         rw [inf_right_comm]
         exact inf_le_right
       have h7 : x' ≤ x' ⊔ y' := by simp
       exact le_trans h6 h7
-    have h6 : (x ⇨ x') ⊓ (y ⇨ y') ∈ F := by exact hF.right.left _ _ h1 h3
+    have h6 : (x ⇨ x') ⊓ (y ⇨ y') ∈ F := hF.right.left _ _ h1 h3
     exact hF.right.right _ _ h6 h5
   · have h5 : ((x' ⇨ x) ⊓ (y' ⇨ y)) ≤ (x' ⊔ y' ⇨ x ⊔ y) := by
       rw [le_himp_iff, inf_sup_left, inf_right_comm, inf_assoc, inf_left_comm, ← inf_assoc, inf_himp,
@@ -66,7 +61,7 @@ lemma or_filter_preserves_equiv {hF : filter F} (x y x' y' : α) :
         exact inf_le_right
       have h7 : x ≤ x ⊔ y := by simp
       exact le_trans h6 h7
-    have h6 : (x' ⇨ x) ⊓ (y' ⇨ y) ∈ F := by exact hF.right.left _ _ h2 h4
+    have h6 : (x' ⇨ x) ⊓ (y' ⇨ y) ∈ F := hF.right.left _ _ h2 h4
     exact hF.right.right _ _ h6 h5
 
 -- define or for quotient algebra
@@ -90,7 +85,7 @@ lemma and_filter_preserves_equiv {hF : filter F} (x y x' y' : α) : equiv_filter
         exact inf_le_left
       · rw [inf_comm, inf_assoc]
         exact inf_le_left
-    have h6 : (x ⇨ x') ⊓ (y ⇨ y') ∈ F := by exact hF.right.left _ _ h1 h3
+    have h6 : (x ⇨ x') ⊓ (y ⇨ y') ∈ F := hF.right.left _ _ h1 h3
     exact hF.right.right _ _ h6 h5
   · have h5 : (x' ⇨ x) ⊓ (y' ⇨ y) ≤ (x' ⊓ y') ⇨ (x ⊓ y) := by
       rw [le_himp_iff, le_inf_iff, inf_left_comm, inf_assoc, himp_inf_self, ← inf_assoc, inf_himp]
@@ -99,7 +94,7 @@ lemma and_filter_preserves_equiv {hF : filter F} (x y x' y' : α) : equiv_filter
         exact inf_le_left
       · rw [inf_comm, inf_assoc]
         exact inf_le_left
-    have h6 : (x' ⇨ x) ⊓ (y' ⇨ y) ∈ F := by exact hF.right.left _ _ h2 h4
+    have h6 : (x' ⇨ x) ⊓ (y' ⇨ y) ∈ F := hF.right.left _ _ h2 h4
     exact hF.right.right _ _ h6 h5
 
 -- Define and for quotient algebra
@@ -118,21 +113,21 @@ lemma to_filter_preserves_equiv {hF : filter F} (x y x' y' : α) : equiv_filter 
   apply And.intro
   · have h5 : (x' ⇨ x) ⊓ (y ⇨ y') ≤ (x ⇨ y) ⇨ (x' ⇨ y') := by
       rw [le_himp_iff, inf_right_comm]
-      have h6 : (x' ⇨ y) ⊓ (y ⇨ y') ≤ x' ⇨ y' := by exact himp_triangle _ _ _
-      have h7 : (x' ⇨ x) ⊓ (x ⇨ y) ≤ x' ⇨ y := by exact himp_triangle _ _ _
+      have h6 : (x' ⇨ y) ⊓ (y ⇨ y') ≤ x' ⇨ y' := himp_triangle _ _ _
+      have h7 : (x' ⇨ x) ⊓ (x ⇨ y) ≤ x' ⇨ y := himp_triangle _ _ _
       have h8 : (x' ⇨ x) ⊓ (x ⇨ y) ⊓ (y ⇨ y') ≤ (x' ⇨ y) ⊓ (y ⇨ y') := by
         exact inf_le_inf_right _ h7
       exact le_trans h8 h6
-    have h9 : (x' ⇨ x) ⊓ (y ⇨ y') ∈ F := by exact hF.right.left _ _ h2 h3
+    have h9 : (x' ⇨ x) ⊓ (y ⇨ y') ∈ F := hF.right.left _ _ h2 h3
     exact hF.right.right _ _ h9 h5
   · have h5 : (x ⇨ x') ⊓ (y' ⇨ y) ≤ (x' ⇨ y') ⇨ (x ⇨ y) := by
       rw [le_himp_iff, inf_right_comm]
-      have h6 : (x ⇨ y') ⊓ (y' ⇨ y) ≤ x ⇨ y := by exact himp_triangle _ _ _
-      have h7 : (x ⇨ x') ⊓ (x' ⇨ y') ≤ x ⇨ y' := by exact himp_triangle _ _ _
+      have h6 : (x ⇨ y') ⊓ (y' ⇨ y) ≤ x ⇨ y := himp_triangle _ _ _
+      have h7 : (x ⇨ x') ⊓ (x' ⇨ y') ≤ x ⇨ y' := himp_triangle _ _ _
       have h8 : (x ⇨ x') ⊓ (x' ⇨ y') ⊓ (y' ⇨ y) ≤ (x ⇨ y') ⊓ (y' ⇨ y) := by
         exact inf_le_inf_right _ h7
       exact le_trans h8 h6
-    have h9 : (x ⇨ x') ⊓ (y' ⇨ y) ∈ F := by exact hF.right.left _ _ h1 h4
+    have h9 : (x ⇨ x') ⊓ (y' ⇨ y) ∈ F := hF.right.left _ _ h1 h4
     exact hF.right.right _ _ h9 h5
 
 -- Define ⇨ for quotient algebra
@@ -151,8 +146,8 @@ lemma le_preserves_equiv_filter {hF : filter F} (x y x' y' : α) :
       simp only [inf_assoc, inf_himp]
       rw [← inf_assoc, ← inf_assoc]
       exact inf_le_right
-    have h3 : (x' ⇨ x) ⊓ (x ⇨ y) ∈ F := by exact hF.right.left _ _ hx.right h1
-    have h4 : (x' ⇨ x) ⊓ (x ⇨ y) ⊓ (y ⇨ y') ∈ F := by exact hF.right.left _ _ h3 hy.left
+    have h3 : (x' ⇨ x) ⊓ (x ⇨ y) ∈ F := hF.right.left _ _ hx.right h1
+    have h4 : (x' ⇨ x) ⊓ (x ⇨ y) ⊓ (y ⇨ y') ∈ F := hF.right.left _ _ h3 hy.left
     exact hF.right.right _ _ h4 h2
   · intro h1
     have h2 : (x ⇨ x') ⊓ (x' ⇨ y') ⊓ (y' ⇨ y) ≤ x ⇨ y := by
@@ -160,8 +155,8 @@ lemma le_preserves_equiv_filter {hF : filter F} (x y x' y' : α) :
       simp only [inf_assoc, inf_himp]
       rw [← inf_assoc, ← inf_assoc]
       exact inf_le_right
-    have h3 : (x ⇨ x') ⊓ (x' ⇨ y') ∈ F := by exact hF.right.left _ _ hx.left h1
-    have h4 : (x ⇨ x') ⊓ (x' ⇨ y') ⊓ (y' ⇨ y) ∈ F := by exact hF.right.left _ _ h3 hy.right
+    have h3 : (x ⇨ x') ⊓ (x' ⇨ y') ∈ F := hF.right.left _ _ hx.left h1
+    have h4 : (x ⇨ x') ⊓ (x' ⇨ y') ⊓ (y' ⇨ y) ∈ F := hF.right.left _ _ h3 hy.right
     exact hF.right.right _ _ h4 h2
 
 -- Define le for the quotient algebra, using well-definedness from above
@@ -177,7 +172,7 @@ lemma my_le_refl {hF : filter F} : ∀ (a : α), @le _ _ F a a := by
 lemma my_le_trans {hF : filter F} : ∀ (a b c : α), @le _ _ F a b → @le _ _ F b c → @le _ _ F a c := by
   intro _ _ _ hab hbc
   unfold le at *
-  exact trans_helper (hF := hF) hab hbc
+  exact trans_helper hF hab hbc
 
 lemma my_le_sup_left {hF : filter F} : ∀ (a b : α), @le _ _ F a (a ⊔ b) := by
   intro a b
@@ -364,8 +359,8 @@ lemma filter_quot_interpretation :
 -- Lemma that says there exists filter F such that filter_quot_var sets Γ to true, but sets ϕ to false
 lemma chain_contradicting_valuation (ϕ : Formula) : ¬Nonempty (Γ ⊢ ϕ) →
   ∃ (F : Set (Quotient (@setoid_formula Γ))) (hF : prime_filter F),
-    set_true_in_alg_model (@filter_quot_var _ _ hF.left.left) Γ ∧
-    ¬true_in_alg_model (@filter_quot_var _ _ hF.left.left) ϕ := by
+    set_true_in_alg_model (@filter_quot_var Γ F hF.left.left) Γ ∧
+    ¬true_in_alg_model (@filter_quot_var Γ F hF.left.left) ϕ := by
 
   intro notTrueInLTAlgebra
   rw [←true_in_lt] at notTrueInLTAlgebra
@@ -377,7 +372,7 @@ lemma chain_contradicting_valuation (ϕ : Formula) : ¬Nonempty (Γ ⊢ ϕ) →
     exact notTrueInLTAlgebra
 
   -- there exists a filter F that separates top and ϕ
-  have hF : ∃F, prime_filter F ∧ ϕModΓ ∉ F := super_prime_filter_cor1 _ hNotTop
+  have hF : ∃F, prime_filter F ∧ ϕModΓ ∉ F := super_prime_filter_cor1 ϕModΓ hNotTop
   obtain ⟨F, hF1, hF2⟩ := hF
   let valuation := @filter_quot_var _ _ hF1.left.left
 
@@ -401,7 +396,7 @@ lemma chain_contradicting_valuation (ϕ : Formula) : ¬Nonempty (Γ ⊢ ϕ) →
     -- assume for contradiction that ϕModΓModF = ⊤
     by_contra
     -- we then have ϕModΓ ~ ⊤
-    have ϕEquivTop : equiv_filter (F := F) (Quotient.mk _ ϕ) Top.top := Quotient.exact this
+    have ϕEquivTop : equiv_filter (Quotient.mk _ ϕ) Top.top := Quotient.exact this
     -- we can now show that ϕ ∈ F, which is a contradiction
     have ϕInF : ϕModΓ ∈ F := by
       simp [equiv_filter, le] at ϕEquivTop
@@ -418,9 +413,10 @@ theorem completeness_chains (ϕ : Formula) : chain_sem_conseq Γ ϕ ↔ Nonempty
       -- use the lemma chain_contradicting_valuation
       have h : ∃ (F : Set (Quotient (@setoid_formula Γ))) (hF : prime_filter F),
         set_true_in_alg_model filter_quot_var Γ ∧
-        ¬true_in_alg_model filter_quot_var ϕ := chain_contradicting_valuation ϕ notTrueInLTAlgebra
+        ¬true_in_alg_model filter_quot_var ϕ :=
+          chain_contradicting_valuation ϕ notTrueInLTAlgebra
       obtain ⟨F, hF, hΓ, nhϕ⟩ := h
-      let valuation := @filter_quot_var _ _ hF.left.left
+      let valuation := @filter_quot_var Γ F hF.left.left
 
       -- the assumption that Γ ⊨ ϕ is specialised to LT/F and valuation
       specialize chainSemConseq (Quotient setoid_filter) valuation
