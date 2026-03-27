@@ -227,7 +227,7 @@ lemma embedBot {hChain : chain α} {I : ℕ → α} {hI1 : Function.Bijective I}
 
 lemma le_mean (a : Q) (b : Q) (c : Q) : a ≤ b → a ≤ c → a ≤ mean b c := by sorry
 
-lemma mean_lt (a : Q) (b : Q) (c : Q) : a < c → b ≤ c → mean a b < c := by sorry
+lemma mean_le (a : Q) (b : Q) (c : Q) : a ≤ c → b ≤ c → mean a b ≤ c := by sorry
 
 lemma embedHelperOrderHelper {hChain : chain α} {I : ℕ → α} {hI1 : Function.Bijective I} {hI2 : I01 I} :
   ∀ (k : ℕ), ∀ (m n : ℕ), m ≤ k → n ≤ k → I m ≤ I n →
@@ -249,9 +249,114 @@ lemma embedHelperOrderHelper {hChain : chain α} {I : ℕ → α} {hI1 : Functio
       · by_cases hn : n = k + 1
         · intro _ _ _
           rw [hm, hn]
-        · sorry
+        · intro hm' hn' hmn
+          have hn : n < k + 1 := by
+            rw [lt_iff_le_and_ne]
+            exact And.intro hn' hn
+          have hn : n ≤ k := by
+            rw [Nat.le_iff_lt_add_one]
+            exact hn
+          unfold embedHelper
+          split
+          · exact bot_le
+          · exfalso
+            sorry
+          · split
+            · exfalso
+              sorry
+            · exact le_top
+            · rename_i n1 y1 n2 y2 _ _
+
+              have hmn : I y1.succ.succ < I y2.succ.succ := by sorry
+
+              let ai1 := @ai α _ hChain _ hI1 hI2 y1.succ.succ (Nat.le_add_left 2 y1)
+              let aj1 := @aj α _ hChain _ hI1 hI2 y1.succ.succ (Nat.le_add_left 2 y1)
+              let ai2 := @ai α _ hChain _ hI1 hI2 y2.succ.succ (Nat.le_add_left 2 y2)
+              let aj2 := @aj α _ hChain _ hI1 hI2 y2.succ.succ (Nat.le_add_left 2 y2)
+              have temp1 : @embedHelper _ _ hChain _ hI1 hI2 (y1.succ.succ) = mean (@embedHelper α _ hChain I hI1 hI2 (Function.invFun I ai1))
+                        (@embedHelper α _ hChain I hI1 hI2 (Function.invFun I aj1)) := by rw [embedHelper]
+              have temp2 : @embedHelper _ _ hChain _ hI1 hI2 (y2.succ.succ) = mean (@embedHelper α _ hChain I hI1 hI2 (Function.invFun I ai2))
+                        (@embedHelper α _ hChain I hI1 hI2 (Function.invFun I aj2)) := by rw [embedHelper]
+              simp only [ai1, aj1, ai2, aj2, ←temp1, ←temp2]
+
+              have h1 : Function.invFun I aj1 < y1.succ.succ := by sorry -- aj1 already defined
+              have h1 : Function.invFun I aj1 ≤ k := by sorry -- aj1 already defined
+              have h2 : aj1 ≤ I y2.succ.succ := by sorry -- aj1 least such > I y1.succ.succ
+              have h2 : I (Function.invFun I aj1) ≤ I y2.succ.succ := by sorry -- by h2
+              have h3 : @embedHelper _ _ _ _ hI1 hI2 (Function.invFun I aj1) ≤ @embedHelper _ _ _ _ hI1 hI2 y2.succ.succ :=
+                ih (Function.invFun I aj1) y2.succ.succ h1 hn h2
+
+              have h4 : Function.invFun I ai1 < y1.succ.succ := by sorry -- ai1 already defined by time y1.succ.succ
+              have h4 : Function.invFun I ai1 ≤ k := by sorry -- by h4
+              have h5 : ai1 < I y1.succ.succ := by sorry -- by def
+              have h5 : I (Function.invFun I ai1) ≤ I y1.succ.succ := by sorry -- by h5
+              have h6 : I (Function.invFun I ai1) ≤ I y2.succ.succ := by sorry -- trans with I y1.succ.succ
+              have h7 : @embedHelper _ _ _ _ hI1 hI2 (Function.invFun I ai1) ≤ @embedHelper _ _ _ _ hI1 hI2 y2.succ.succ :=
+                ih (Function.invFun I ai1) y2.succ.succ h4 hn h6
+
+              have h8 : mean (embed ai1) (embed aj1) ≤ embedHelper y2.succ.succ :=
+                mean_le (@embed _ _ _ _ hI1 hI2 ai1)
+                        (@embed _ _ _ _ hI1 hI2 aj1)
+                        (@embedHelper _ _ _ _ hI1 hI2 y2.succ.succ)
+                        h7 h3
+
+              rw [temp1]
+              simp only [embed] at h8
+              exact h8
       · by_cases hn : n = k + 1
-        · sorry
+        · intro hm' hn' hmn
+          have hm : m < k + 1 := by
+            rw [lt_iff_le_and_ne]
+            exact And.intro hm' hm
+          have hn : m ≤ k := by
+            rw [Nat.le_iff_lt_add_one]
+            exact hm
+          unfold embedHelper
+          split
+          · exact bot_le
+          · exfalso
+            sorry
+          · split
+            · exfalso
+              sorry
+            · exact le_top
+            · rename_i n1 y1 _ _ n2 y2
+
+              have hmn : I y1.succ.succ < I y2.succ.succ := by sorry
+
+              let ai1 := @ai α _ hChain _ hI1 hI2 y1.succ.succ (Nat.le_add_left 2 y1)
+              let aj1 := @aj α _ hChain _ hI1 hI2 y1.succ.succ (Nat.le_add_left 2 y1)
+              let ai2 := @ai α _ hChain _ hI1 hI2 y2.succ.succ (Nat.le_add_left 2 y2)
+              let aj2 := @aj α _ hChain _ hI1 hI2 y2.succ.succ (Nat.le_add_left 2 y2)
+              have temp1 : @embedHelper _ _ hChain _ hI1 hI2 (y1.succ.succ) = mean (@embedHelper α _ hChain I hI1 hI2 (Function.invFun I ai1))
+                        (@embedHelper α _ hChain I hI1 hI2 (Function.invFun I aj1)) := by rw [embedHelper]
+              have temp2 : @embedHelper _ _ hChain _ hI1 hI2 (y2.succ.succ) = mean (@embedHelper α _ hChain I hI1 hI2 (Function.invFun I ai2))
+                        (@embedHelper α _ hChain I hI1 hI2 (Function.invFun I aj2)) := by rw [embedHelper]
+              simp only [ai1, aj1, ai2, aj2, ←temp1, ←temp2]
+              rename_i hm _
+
+              have h1 : I y1.succ.succ ≤ ai2 := by sorry -- ai2 is largest such < I y2.succ.succ
+              have h1 : I y1.succ.succ ≤ I (Function.invFun I ai2) := by sorry
+              have h2 : Function.invFun I ai2 ≤ k := by sorry -- already defined when we define k+1
+              have h3 : @embedHelper _ _ _ _ hI1 hI2 y1.succ.succ ≤ @embedHelper _ _ _ _ hI1 hI2 (Function.invFun I ai2) :=
+                ih y1.succ.succ (Function.invFun I ai2) hm h2 h1
+
+              have h4 : I y1.succ.succ ≤ aj2 := by sorry -- trans with y2.succ.succ
+              have h4 : I y1.succ.succ ≤ I (Function.invFun I aj2) := by sorry
+              have h5 : Function.invFun I aj2 ≤ k := by sorry -- already defined when we define k+1
+              have h6 : I y1.succ.succ ≤ I (Function.invFun I aj2) := by sorry
+              have h7 : @embedHelper _ _ _ _ hI1 hI2 y1.succ.succ ≤ @embedHelper _ _ _ _ hI1 hI2 (Function.invFun I aj2) :=
+                ih y1.succ.succ (Function.invFun I aj2) hm h5 h6
+
+              have h8 : embedHelper y1.succ.succ ≤ mean (embed ai2) (embed aj2) :=
+                le_mean (@embedHelper _ _ _ _ hI1 hI2 y1.succ.succ)
+                        (@embed _ _ _ _ hI1 hI2 ai2)
+                        (@embed _ _ _ _ hI1 hI2 aj2)
+                        h3 h7
+
+              rw [temp2]
+              simp only [embed] at h8
+              exact h8
         · intro hm' hn' hmn
           have hm : m < k + 1 := by
             rw [lt_iff_le_and_ne]
