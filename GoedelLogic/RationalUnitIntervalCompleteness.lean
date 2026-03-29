@@ -700,11 +700,47 @@ lemma embedSup {hChain : chain α} {I : ℕ → α} {hI1 : Function.Bijective I}
     simp [h1]
     exact h2
 
-
 lemma chainHimp {hChain : chain α} {a b : α} : ¬ (a ≤ b) → a ⇨ b = b := by
   intro hab
   apply le_antisymm
-  · sorry
+  · have h1 : (a ⇨ b) ⊓ a = b ⊓ a := himp_inf_self a b
+    have h2 : b < a := by
+      rw [lt_iff_le_not_ge]
+      have hch : a ≤ b ∨ b ≤ a := hChain a b
+      have hch : b ≤ a := by
+        apply Or.elim hch
+        · intro temp
+          exfalso
+          exact hab temp
+        · simp
+      exact And.intro hch hab
+    have h3 : b ⊓ a = b := by
+      simp
+      rw [le_iff_eq_or_lt]
+      exact Or.inr h2
+    have hch : a ⇨ b ≤ a ∨ a ≤ a ⇨ b := hChain (a ⇨ b) a
+    have temp : ¬ (a ≤ a ⇨ b) := by
+      by_contra
+      have haux : a ≤ b := by
+        have htemp : a = a ⊓ a := by simp
+        rw [htemp]
+        rw [←le_himp_iff]
+        exact this
+      exact hab haux
+    have hch : a ⇨ b ≤ a := by
+      apply Or.elim hch
+      · simp
+      · intro temp'
+        exfalso
+        exact temp temp'
+    have h4 : (a ⇨ b) ⊓ a = a ⇨ b := by
+      simp only [inf_eq_left]
+      exact hch
+    rw [h3, h4] at h1
+    have h1 : a ⇨ b ≤ b := by
+      rw [le_iff_eq_or_lt]
+      exact Or.inl h1
+    exact h1
   · exact le_himp
 
 lemma embedTo {hChain : chain α} {I : ℕ → α} {hI1 : Function.Bijective I} {hI2 : I01 I} :
@@ -787,25 +823,17 @@ lemma embedHomo{hChain : chain α} {I : ℕ → α} {hI1 : Function.Bijective I}
           · exact @embedSup _ _ _ _ _ _ _ _
           · exact @embedTo _ _ _ _ _ _ _ _
 
-
 -- The embedding into Q that we want exists
 lemma embedding {hC : Countable α} : chain α → ∃ (f : α → Q), Qhomomorphism f ∧ Function.Injective f := by
   intro h1
-  have inj : ∃ (f : α → ℕ), Function.Injective f := exists_injective_nat α
-  obtain ⟨f, hf⟩ := inj
-  have surj : ∃ (g : ℕ → α), Function.Surjective g := exists_surjective_nat α
-  obtain ⟨g, hg⟩ := surj
-
-
   sorry
-  -- ensure enum is a bijection and enum bot is 0 and enum top is 1 (swap values?)
-  /-have hg1 : Function.Bijective enum := by sorry
-  have hg2 : enum 0 = Bot.bot ∧ enum 1 = Top.top := by sorry
+  /-have h01 : enum 0 = Bot.bot ∧ enum 1 = Top.top := by sorry
   have hChain : LinearOrder α := @lo α _ h1
-  let f := @embed _ _ h1 enum hg1 hg2
+  let f := @embed _ _ h1 enum bij h01
   -- use embedHomo and embedInj to conclude
   have Qhomof : Qhomomorphism f := embedHomo
   have Injf : Function.Injective f := embedInj
+
   exists f-/
 
 -- f_quot_var will be the valuation that allows us to derive a contradiction in the completeness proof
