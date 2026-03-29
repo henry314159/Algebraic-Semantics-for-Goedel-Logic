@@ -42,39 +42,6 @@ lemma pairing_0 {x y : ℕ} : pairing x y = 0 → x = 0 ∧ y = 0 :=
     intro h
     simp [pairing, Nat.mul_eq_zero] at h
     exact h.left
-/-
-lemma pairing_inj1 (x y z t : ℕ) : pairing x y = pairing z t ↔ x = z ∧ y = t := by
-  apply Iff.intro
-  · intro h
-    set a := x + y with ha
-    set b := z + t with hb
-    simp only [pairing, ←ha,←hb] at h
-    by_cases hab : a = b
-    · rw [hab] at h
-      have hxz : x = z := by
-        rw [Nat.add_left_cancel_iff, Nat.mul_left_cancel_iff] at h
-        exact h
-        apply Nat.zero_lt_succ
-      have hyt : y = t := by
-        rw [ha, hb, hxz, Nat.add_left_cancel_iff] at hab
-        exact hab
-      exact And.intro hxz hyt
-    · exfalso
-      by_cases hab : a < b
-      · set d := b - a with hd
-        have hd' : b = d + a := by
-          apply Nat.eq_add_of_sub_eq
-          · apply Nat.le_of_lt hab
-          · rfl
-        rw [hd'] at h
-        --have hle
-        have h : a*(a + 1) + 2*x - 2*z = (d + a)*(d + a + 1) := by
-          apply Nat.sub_eq_of_eq_add at h
-          exact h
-        have h : 2*x - 2*z = (d + a)*(d + a + 1) - a*(a + 1) := by
-          simp [h]
--/
-
 
 -- TODO: attempt to shorten proof of pairing_inj?
 lemma pairing_inj (x y z t : ℕ) : pairing x y = pairing z t ↔
@@ -308,7 +275,6 @@ theorem inject_Form : encode_form.Injective :=
                                                                              rw [pairing_inj] at hl
                                                                              first | exact And.intro (ih1 hl.left) (ih2 hr) | rcases hl; contradiction }
 
--- Would use this if I were to prove that A/F is countable
-instance : Countable Formula := inject_Form.countable
+instance countable_formula : Countable Formula := inject_Form.countable
 
 instance : Nonempty Formula := ⟨⊥⟩

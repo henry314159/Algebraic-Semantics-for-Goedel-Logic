@@ -301,6 +301,13 @@ instance quotient_algebra {hF : filter F} : LAlgebra (Quotient (setoid_filter (h
       exact top_mem_filter (Hfilter := hF)
     }
 
+theorem countable_quotient_algebra {Γ : Set Formula} {F : Set (Quotient (@setoid_formula Γ))} {hF : filter F} : Countable (Quotient (@setoid_filter (Quotient (@setoid_formula Γ)) _ _ hF)) := by
+  apply @Function.Surjective.countable (Quotient (@setoid_formula Γ))
+                                       (Quotient (@setoid_filter (Quotient (@setoid_formula Γ)) _ _ hF))
+                                       countable_lt
+                                       (Quotient.mk setoid_filter)
+                                       Quotient.mk_surjective
+
 -- lemma that says if F is a prime filter and A an LAlgebra, then A/F is a chain
 lemma quotient_chain {hF : filter F}: prime_filter F → chain (Quotient (setoid_filter (hF := hF))) := by
   intro p a b

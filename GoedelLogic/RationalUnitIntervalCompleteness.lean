@@ -1,5 +1,6 @@
 import GoedelLogic.RationalUnitIntervalSoundness
 import GoedelLogic.ChainCompleteness
+import GoedelLogic.Formula
 import Mathlib.Data.Set.Countable
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Finset.Max
@@ -883,8 +884,6 @@ lemma f_q_alg_interpretation {hF : filter F} {f : Quotient (@setoid_filter (Quot
           (hf.right.right ψModΓModG χModΓModG).right.right.right
         simp only [setoid_formula.eq_1, h]
 
-instance countable {Γ : Set Formula} {F : Set (Quotient (@setoid_formula Γ))} {hF : filter F} : Countable (Quotient (@setoid_filter (Quotient (@setoid_formula Γ)) _ _ hF)) := sorry
-
 -- Gives us a valuation that sets Γ to true, but ϕ to false
 lemma rational_contradicting_valuation (ϕ : Formula) : ¬Nonempty (Γ ⊢ ϕ) →
   ∃ (F : Set (Quotient (@setoid_formula Γ))) (hF : prime_filter F)
@@ -901,7 +900,7 @@ lemma rational_contradicting_valuation (ϕ : Formula) : ¬Nonempty (Γ ⊢ ϕ) �
   obtain ⟨F, hF, hΓ', nhϕ'⟩ := h
   -- take the embedding from A/F into Q
   have embed : ∃ (f : Quotient (setoid_filter (hF := hF.left.left)) → Q),
-    Qhomomorphism f ∧ Function.Injective f := @embedding _ _ countable (quotient_chain hF)
+    Qhomomorphism f ∧ Function.Injective f := @embedding _ _ countable_quotient_algebra (quotient_chain hF)
   obtain ⟨f, hf⟩ := embed
   -- introduce our valuation into Q that will let us derive a contradiction
   let I (v : Var) := f_q_var (f := f) v
