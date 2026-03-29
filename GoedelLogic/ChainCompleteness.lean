@@ -301,7 +301,7 @@ instance quotient_algebra {hF : filter F} : LAlgebra (Quotient (setoid_filter (h
       exact top_mem_filter (Hfilter := hF)
     }
 
-theorem countable_quotient_algebra {Γ : Set Formula} {F : Set (Quotient (@setoid_formula Γ))} {hF : filter F} : Countable (Quotient (@setoid_filter (Quotient (@setoid_formula Γ)) _ _ hF)) := by
+instance countable_quotient_algebra {Γ : Set Formula} {F : Set (Quotient (@setoid_formula Γ))} {hF : filter F} : Countable (Quotient (@setoid_filter (Quotient (@setoid_formula Γ)) _ _ hF)) := by
   apply @Function.Surjective.countable (Quotient (@setoid_formula Γ))
                                        (Quotient (@setoid_filter (Quotient (@setoid_formula Γ)) _ _ hF))
                                        countable_lt
@@ -421,9 +421,9 @@ theorem completeness_chains (ϕ : Formula) : chain_sem_conseq Γ ϕ ↔ Nonempty
       have h : ∃ (F : Set (Quotient (@setoid_formula Γ))) (hF : prime_filter F),
         set_true_in_alg_model filter_quot_var Γ ∧
         ¬true_in_alg_model filter_quot_var ϕ :=
-          chain_contradicting_valuation ϕ notTrueInLTAlgebra
-      obtain ⟨F, hF, hΓ, nhϕ⟩ := h
-      let valuation := @filter_quot_var Γ F hF.left.left
+        chain_contradicting_valuation ϕ notTrueInLTAlgebra
+      obtain ⟨_, hF, hΓ, nhϕ⟩ := h
+      let valuation := @filter_quot_var _ _ hF.left.left
 
       -- the assumption that Γ ⊨ ϕ is specialised to LT/F and valuation
       specialize chainSemConseq (Quotient setoid_filter) valuation
@@ -434,78 +434,3 @@ theorem completeness_chains (ϕ : Formula) : chain_sem_conseq Γ ϕ ↔ Nonempty
         exact And.intro (quotient_chain hF) hΓ
       exact nhϕ hϕ
     · exact soundness_chains ϕ
-
--- proof requires an application of Zorn's Lemma
---lemma filter_ideal_disjoint (F : Set α) (I : Set α) : ideal I → F ∩ I = ∅ →
---  ∃ (G : Set α), prime_filter G ∧ I ∩ G = ∅ ∧ F ⊆ G := by
---  sorry
-
--- lemma that says there is a prime filter that separates x and y
--- clean up this proof
-/-
-lemma separating_prime_filter (x y : α) : ¬y ≤ x → ∃ (F : Set α), prime_filter F ∧ x ∉ F ∧ y ∈ F := by
-  intro h
-  let G := {z | y ≤ z}
-  have h1 : filter G := by
-    unfold filter
-    apply And.intro
-    · rw [Set.nonempty_def]
-      apply Exists.intro Top.top
-      have h2 : y ≤ Top.top := by exact le_top
-      exact h2
-    · apply And.intro
-      · intro x' y' hx' hy'
-        have h3 : y ≤ x' ⊓ y' := by
-          rw [le_inf_iff]
-          apply And.intro
-          · exact hx'
-          · exact hy'
-        exact h3
-      · intro x' y' hx' h4
-        have h5 : y ≤ y' := by
-          exact le_trans hx' h4
-        exact h5
-  let H := {z | z ≤ x}
-  have h7 : x ≤ x := by exact le_refl x
-  have h6 : ideal H := by
-    unfold ideal
-    apply And.intro
-    · rw [Set.nonempty_def]
-      apply Exists.intro x
-      exact h7
-    · intro x' y' hx' hy'
-      have h8 : x' ⊔ y' ≤ x := by
-        rw [sup_le_iff]
-        apply And.intro
-        · exact hx'
-        · exact hy'
-      exact h8
-  have h9 : G ∩ H = ∅ := by
-    rw [← Set.not_nonempty_iff_eq_empty]
-    rw [Set.nonempty_def]
-    by_contra
-    obtain ⟨x', hx'⟩ := this
-    rw [Set.mem_inter_iff] at hx'
-    have h14 : y ≤ x' := by exact hx'.left
-    have h15 : x' ≤ x := by exact hx'.right
-    have h16 : y ≤ x := by exact le_trans h14 h15
-    exact h h16
-  have h10 : ∃ (K : Set α), prime_filter K ∧ H ∩ K = ∅ ∧ G ⊆ K := by exact filter_ideal_disjoint G H h6 h9
-  obtain ⟨K, hK⟩ := h10
-  apply Exists.intro K
-  simp only [hK, true_and]
-  apply And.intro
-  · by_contra
-    have h11 : x ∈ H ∩ K := by
-      rw [Set.mem_inter_iff]
-      apply And.intro
-      · exact h7
-      · exact this
-    have h12 : H ∩ K ≠ ∅ := by
-      rw [← Set.nonempty_iff_ne_empty, Set.nonempty_def]
-      apply Exists.intro x h11
-    exact h12 hK.right.left
-  · have h13 : y ≤ y := by exact le_refl y
-    have h14 : y ∈ G := by exact h13
-    exact Set.mem_of_mem_of_subset h14 hK.right.right
--/

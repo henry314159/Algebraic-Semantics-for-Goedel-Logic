@@ -219,7 +219,7 @@ instance : LAlgebra (Quotient (@setoid_formula Γ)) :=
         have h : Γ ∪ {⊤} ⊢ (ϕ ⇒ ψ) ∨∨ (ψ ⇒ ϕ) := Proof.linearity
         exact Proof.deductionTheorem_left h }
 
-theorem countable_lt {Γ : Set Formula} : Countable (Quotient (@setoid_formula Γ)) := by
+instance countable_lt {Γ : Set Formula} : Countable (Quotient (@setoid_formula Γ)) := by
   apply @Function.Surjective.countable Formula
                                        (Quotient (@setoid_formula Γ))
                                        Formula.countable_formula

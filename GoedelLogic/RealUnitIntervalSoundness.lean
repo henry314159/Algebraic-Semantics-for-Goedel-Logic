@@ -4,20 +4,20 @@ import Mathlib.Data.Real.Basic
 -- Define the real unit interval
 def R := Set.Icc (0 : ℝ) 1
 
-theorem zero_memR : (0 : ℝ) ∈ R := by
+theorem zero_mem_R : (0 : ℝ) ∈ R := by
   apply And.intro
   · exact le_rfl
   · exact zero_le_one
 
-theorem one_memR : (1 : ℝ) ∈ R := by
+theorem one_mem_R : (1 : ℝ) ∈ R := by
   apply And.intro
   · exact zero_le_one
   · exact le_rfl
 
 -- Define Heyting implication
-noncomputable def himpR (a b : R) : R := if a ≤ b then ⟨1, one_memR⟩ else b
+noncomputable def himp_R (a b : R) : R := if a ≤ b then ⟨1, one_mem_R⟩ else b
 
-lemma max_oneR {x : R} : max ⟨1, one_memR⟩ x = ⟨1, one_memR⟩ := by
+lemma max_one_R {x : R} : max ⟨1, one_mem_R⟩ x = ⟨1, one_mem_R⟩ := by
   rw [le_antisymm_iff]
   have hx : (x : ℝ) ∈ R := by simp
   apply And.intro
@@ -26,13 +26,13 @@ lemma max_oneR {x : R} : max ⟨1, one_memR⟩ x = ⟨1, one_memR⟩ := by
 
 -- Show that R is an LAlgebra
 noncomputable instance : LAlgebra R := {
-  top := ⟨1, one_memR⟩
+  top := ⟨1, one_mem_R⟩
   le_top := λ a => by
     have ha : (a : ℝ) ∈ R := by simp
     exact ha.right
-  himp := himpR
+  himp := himp_R
   le_himp_iff := λ a1 a2 a3 => by
-    simp [himpR]
+    simp [himp_R]
     apply Iff.intro
     · intro h
       by_cases hCase : a2 ≤ a3
@@ -50,19 +50,19 @@ noncomputable instance : LAlgebra R := {
         · by_contra
           rename_i h1 h2
           exact h1 h2
-  bot := ⟨0, zero_memR⟩
+  bot := ⟨0, zero_mem_R⟩
   bot_le := λ a => by
     have ha : (a : ℝ) ∈ R := by simp
     exact ha.left
-  compl := λ q => himpR q ⟨0, zero_memR⟩
+  compl := λ q => himp_R q ⟨0, zero_mem_R⟩
   himp_bot := λ q => rfl
   l_axiom := λ q1 q2 => by
-    simp [himpR]
+    simp [himp_R]
     split_ifs
     · simp
-    · exact max_oneR
+    · exact max_one_R
     · rw [max_comm]
-      exact max_oneR
+      exact max_one_R
     · by_contra
       have h : q1 ≤ q2 ∨ q2 ≤ q1 := le_total _ _
       cases h

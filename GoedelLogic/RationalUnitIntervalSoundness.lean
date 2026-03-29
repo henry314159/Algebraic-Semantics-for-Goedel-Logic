@@ -5,17 +5,17 @@ import Mathlib.Order.Interval.Set.Defs
 -- Define the rational unit interval
 def Q := Set.Icc (0 : ℚ) 1
 
-theorem zero_memQ : (0 : ℚ) ∈ Q := by
+theorem zero_mem_Q : (0 : ℚ) ∈ Q := by
   apply And.intro
   · exact le_rfl
   · exact zero_le_one
 
-theorem one_memQ : (1 : ℚ) ∈ Q := by
+theorem one_mem_Q : (1 : ℚ) ∈ Q := by
   apply And.intro
   · exact zero_le_one
   · exact le_rfl
 
-theorem max_oneQ {x : Q} : max ⟨1, one_memQ⟩ x = ⟨1, one_memQ⟩ := by
+theorem max_one_Q {x : Q} : max ⟨1, one_mem_Q⟩ x = ⟨1, one_mem_Q⟩ := by
   rw [le_antisymm_iff]
   have h1 : (1 : ℚ) ≤ (1 : ℚ) := by simp
   have hx : (x : ℚ) ∈ Q := by simp
@@ -24,7 +24,7 @@ theorem max_oneQ {x : Q} : max ⟨1, one_memQ⟩ x = ⟨1, one_memQ⟩ := by
   · exact le_sup_left
 
 -- Need to show that the mean of q1 and q2 is in Q, for constructing the embedding into Q
-theorem mean_memQ (q1 q2 : Q) : ((q1:ℚ)/2) + ((q2:ℚ)/2) ∈ Q := by
+theorem mean_mem_Q (q1 q2 : Q) : ((q1:ℚ)/2) + ((q2:ℚ)/2) ∈ Q := by
   have hq1 : (q1 : ℚ) ∈ Q := by simp
   have hq1' : 0 ≤ (q1 : ℚ)/2 := @Rat.div_nonneg (q1 : ℚ) 2 hq1.left zero_le_two
   have hq1'' : (q1 : ℚ)/2 ≤ 1/2 := by
@@ -44,7 +44,7 @@ theorem mean_memQ (q1 q2 : Q) : ((q1:ℚ)/2) + ((q2:ℚ)/2) ∈ Q := by
   · rw [← add_halves 1]
     exact add_le_add hq1'' hq2''
 
-def mean (q1 : Q) (q2 : Q) : Q := ⟨((q1:ℚ)/2) + ((q2:ℚ)/2), mean_memQ q1 q2⟩
+def mean (q1 : Q) (q2 : Q) : Q := ⟨((q1:ℚ)/2) + ((q2:ℚ)/2), mean_mem_Q q1 q2⟩
 
 theorem mean_le_mean (a : Q) (b : Q) (c : Q) (d : Q) : a ≤ c → b ≤ d → mean a b ≤ mean c d := by
   intro hac hbd
@@ -138,7 +138,7 @@ theorem mean_lt (a : Q) (b : Q) (c : Q) : a < c → b ≤ c → mean a b < c := 
   rw [mean_self c]
   exact mean_lt_mean_left a b c c hab hac
 
-theorem mean_eq_one (a : Q) (b : Q) : mean a b = ⟨1, one_memQ⟩ ↔ a = ⟨1, one_memQ⟩ ∧ b = ⟨1, one_memQ⟩ := by
+theorem mean_eq_one (a : Q) (b : Q) : mean a b = ⟨1, one_mem_Q⟩ ↔ a = ⟨1, one_mem_Q⟩ ∧ b = ⟨1, one_mem_Q⟩ := by
   apply Iff.intro
   · intro h
     unfold mean at h
@@ -173,7 +173,7 @@ theorem mean_eq_one (a : Q) (b : Q) : mean a b = ⟨1, one_memQ⟩ ↔ a = ⟨1,
       apply Rat.le_antisymm
       exact hb
       exact hb'
-    have hb'' : b = ⟨1, one_memQ⟩ := by
+    have hb'' : b = ⟨1, one_mem_Q⟩ := by
       apply Subtype.ext
       exact hb''
 
@@ -196,7 +196,7 @@ theorem mean_eq_one (a : Q) (b : Q) : mean a b = ⟨1, one_memQ⟩ ↔ a = ⟨1,
       apply Rat.le_antisymm
       exact ha
       exact ha'
-    have ha'' : a = ⟨1, one_memQ⟩ := by
+    have ha'' : a = ⟨1, one_mem_Q⟩ := by
       apply Subtype.ext
       exact ha''
 
@@ -204,9 +204,9 @@ theorem mean_eq_one (a : Q) (b : Q) : mean a b = ⟨1, one_memQ⟩ ↔ a = ⟨1,
   · intro h
     apply Eq.symm
     rw [h.right, h.left]
-    exact mean_self ⟨1, one_memQ⟩
+    exact mean_self ⟨1, one_mem_Q⟩
 
-theorem mean_eq_zero (a : Q) (b : Q) : mean a b = ⟨0, zero_memQ⟩ ↔ a = ⟨0, zero_memQ⟩ ∧ b = ⟨0, one_memQ⟩ := by
+theorem mean_eq_zero (a : Q) (b : Q) : mean a b = ⟨0, zero_mem_Q⟩ ↔ a = ⟨0, zero_mem_Q⟩ ∧ b = ⟨0, one_mem_Q⟩ := by
   apply Iff.intro
   · intro h
     unfold mean at h
@@ -236,7 +236,7 @@ theorem mean_eq_zero (a : Q) (b : Q) : mean a b = ⟨0, zero_memQ⟩ ↔ a = ⟨
       apply Rat.le_antisymm
       exact hb'
       exact hb
-    have hb'' : b = ⟨0, zero_memQ⟩ := by
+    have hb'' : b = ⟨0, zero_mem_Q⟩ := by
       apply Subtype.ext
       exact hb''
 
@@ -255,7 +255,7 @@ theorem mean_eq_zero (a : Q) (b : Q) : mean a b = ⟨0, zero_memQ⟩ ↔ a = ⟨
       apply Rat.le_antisymm
       exact hb'
       exact ha
-    have ha'' : a = ⟨0, zero_memQ⟩ := by
+    have ha'' : a = ⟨0, zero_mem_Q⟩ := by
       apply Subtype.ext
       exact ha''
 
@@ -263,20 +263,20 @@ theorem mean_eq_zero (a : Q) (b : Q) : mean a b = ⟨0, zero_memQ⟩ ↔ a = ⟨
   · intro h
     apply Eq.symm
     rw [h.right, h.left]
-    exact mean_self ⟨0, zero_memQ⟩
+    exact mean_self ⟨0, zero_mem_Q⟩
 
 -- Define the Heyting implication for Q
-def himpQ (a b : Q) : Q := if a ≤ b then ⟨1, one_memQ⟩ else b
+def himp_Q (a b : Q) : Q := if a ≤ b then ⟨1, one_mem_Q⟩ else b
 
 -- Show that Q is an LAlgebra
 instance : LAlgebra Q := {
-  top := ⟨1, one_memQ⟩
+  top := ⟨1, one_mem_Q⟩
   le_top := λ a => by
     have ha : (a : ℚ) ∈ Q := by simp
     exact ha.right
-  himp := himpQ
+  himp := himp_Q
   le_himp_iff := λ a1 a2 a3 => by
-    simp [himpQ]
+    simp [himp_Q]
     apply Iff.intro
     · intro h
       by_cases hCase : a2 ≤ a3
@@ -294,19 +294,19 @@ instance : LAlgebra Q := {
         · by_contra
           rename_i h1 h2
           exact h1 h2
-  bot := ⟨0, zero_memQ⟩
+  bot := ⟨0, zero_mem_Q⟩
   bot_le := λ a => by
     have ha : (a : ℚ) ∈ Q := by simp
     exact ha.left
-  compl := λ q => himpQ q ⟨0, zero_memQ⟩
+  compl := λ q => himp_Q q ⟨0, zero_mem_Q⟩
   himp_bot := λ q => by rfl
   l_axiom := λ q1 q2 => by
-    simp [himpQ]
+    simp [himp_Q]
     split_ifs
     · simp
-    · exact max_oneQ
+    · exact max_one_Q
     · rw [max_comm]
-      exact max_oneQ
+      exact max_one_Q
     · by_contra
       have h : q1 ≤ q2 ∨ q2 ≤ q1 := le_total _ _
       cases h
