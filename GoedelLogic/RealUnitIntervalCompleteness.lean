@@ -145,16 +145,10 @@ theorem completeness_real_unit_interval {Γ : Set Formula} (ϕ : Formula) :
 
     have h : ∃ (F : Set (Quotient setoid_formula)) (hF : prime_filter F)
       (f : Quotient setoid_filter → Q),
-      set_true_in_alg_model (@f_r_var _ _ _ _) Γ ∧
-      ¬true_in_alg_model (@f_r_var _ _ _ _) ϕ :=
-      @real_contradicting_valuation _ _ notTrueInLTAlgebra
-    obtain ⟨_, _, f, _, nhϕ⟩ := h
-    let valuation := @f_r_var _ _ _ f
+      set_true_in_alg_model f_r_var Γ ∧
+      ¬true_in_alg_model f_r_var ϕ :=
+      real_contradicting_valuation ϕ notTrueInLTAlgebra
+    obtain ⟨F, hF, f, hΓ, nhϕ⟩ := h
 
-    specialize unitSemConseq valuation
-
-    have hϕ : true_in_alg_model valuation ϕ := by
-      apply unitSemConseq
-      assumption
-    exact nhϕ hϕ
+    exact nhϕ (unitSemConseq f_r_var hΓ)
   · exact soundness_real_unit_interval ϕ

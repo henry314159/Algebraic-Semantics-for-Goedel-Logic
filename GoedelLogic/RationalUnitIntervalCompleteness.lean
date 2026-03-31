@@ -879,7 +879,8 @@ lemma embedding {hC : Countable α} : chain α → ∃ (f : α → Q), Q_homomor
     have Qhomof : Q_homomorphism f := embed_homo
     have Injf : Function.Injective f := embed_inj
     exists f
-  · sorry
+  · sorry -- finite case (need to change previous definitions and lemmas to take a bijective function
+          -- from a subset of ℕ that may be finite)
 
 -- f_quot_var will be the valuation that allows us to derive a contradiction in the completeness proof
 def f_q_var {hF : filter F} {f : Quotient (@setoid_filter (Quotient (@setoid_formula Γ)) _ _ _) → Q} (v : Var) :=
@@ -971,16 +972,10 @@ theorem completeness_rational_unit_interval (ϕ : Formula) : rational_unit_inter
     have h : ∃ (F : Set (Quotient setoid_formula)) (hF : prime_filter F)
       (f : Quotient setoid_filter → Q),
       Q_homomorphism f ∧
-      set_true_in_alg_model (@f_q_var _ _ _ f) Γ ∧
-      ¬true_in_alg_model (@f_q_var _ _ _ f) ϕ :=
-      @rational_contradicting_valuation _ _ notTrueInLTAlgebra
-    obtain ⟨_, _, f, _, _, nhϕ⟩ := h
-    let valuation := @f_q_var _ _ _ f
+      set_true_in_alg_model f_q_var Γ ∧
+      ¬true_in_alg_model f_q_var ϕ :=
+      rational_contradicting_valuation ϕ notTrueInLTAlgebra
+    obtain ⟨F, hF, f, hf, hΓ, nhϕ⟩ := h
 
-    specialize unitSemConseq valuation
-
-    have hϕ : true_in_alg_model valuation ϕ := by
-      apply unitSemConseq
-      assumption
-    exact nhϕ hϕ
+    exact nhϕ (unitSemConseq f_q_var hΓ)
   · exact soundness_rational_unit_interval ϕ
