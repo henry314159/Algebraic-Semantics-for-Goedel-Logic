@@ -16,12 +16,10 @@ theorem q_mem_R (q : Q) : (q : ℝ) ∈ R := by
 noncomputable def incl (q : Q) : R := ⟨Rat.castOrderEmbedding q, q_mem_R q⟩
 
 lemma zero_eq_zero :
-  ((⟨0, zero_mem_Q⟩ : Q) : ℝ) = ((⟨0, zero_mem_R⟩ : R) : ℝ) := by
-  simp only [Rat.cast_zero]
+  ((⟨0, zero_mem_Q⟩ : Q) : ℝ) = ((⟨0, zero_mem_R⟩ : R) : ℝ) := by simp
 
 lemma one_eq_one :
-  ((⟨1, one_mem_Q⟩ : Q) : ℝ) = ((⟨1, one_mem_R⟩ : R) : ℝ) := by
-  simp only [Rat.cast_one]
+  ((⟨1, one_mem_Q⟩ : Q) : ℝ) = ((⟨1, one_mem_R⟩ : R) : ℝ) := by simp
 
 lemma incl_top : incl Top.top = Top.top := by
   unfold incl
@@ -33,24 +31,18 @@ lemma incl_bot : incl Bot.bot = Bot.bot := by
   apply Subtype.ext
   exact zero_eq_zero
 
-lemma incl_order : ∀ (a b : Q), (a ≤ b → incl a ≤ incl b) := by
-  intro a b hab
-  unfold incl
-  simp only [Rat.castOrderEmbedding_apply, Subtype.mk_le_mk, Rat.cast_le, Subtype.coe_le_coe]
-  exact hab
-
 lemma incl_inf : ∀ (a b : Q), incl (a ⊓ b) = incl a ⊓ incl b := by
-  intro a b
+  intro _ _
   unfold incl
   simp [min, SemilatticeInf.inf, Lattice.inf]
 
 lemma incl_sup : ∀ (a b : Q), incl (a ⊔ b) = incl a ⊔ incl b := by
-  intro a b
+  intro _ _
   unfold incl
   simp [max, SemilatticeSup.sup]
 
 lemma incl_to : ∀ (a b : Q), incl (a ⇨ b) = incl a ⇨ incl b := by
-  intro a b
+  intro _ _
   unfold incl
   simp [himp, himp_Q, himp_R]
   split_ifs
@@ -58,11 +50,9 @@ lemma incl_to : ∀ (a b : Q), incl (a ⇨ b) = incl a ⇨ incl b := by
   · simp
 
 lemma incl_inj : Function.Injective incl := by
-  intro a b h
-  unfold incl at h
-  simp at h
-  apply Subtype.ext
-  exact h
+  intro _ _
+  simp [incl]
+  exact Subtype.ext
 
 -- Define the valuation into R that allows us to prove completeness
 noncomputable def f_r_var {hF : filter F} {f : Quotient (@setoid_filter (Quotient setoid_formula) _ _ _) → Q} (v : Var) :=

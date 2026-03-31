@@ -418,11 +418,11 @@ theorem completeness_chains (ϕ : Formula) : chain_sem_conseq Γ ϕ ↔ Nonempty
       by_contra notTrueInLTAlgebra
 
       -- use the lemma chain_contradicting_valuation
-      have h : ∃ (F : Set (Quotient (@setoid_formula Γ))) (hF : prime_filter F),
+      have h : ∃ (F : Set (Quotient setoid_formula)) (hF : prime_filter F),
         set_true_in_alg_model filter_quot_var Γ ∧
         ¬true_in_alg_model filter_quot_var ϕ :=
         chain_contradicting_valuation ϕ notTrueInLTAlgebra
-      obtain ⟨_, hF, hΓ, nhϕ⟩ := h
+      obtain ⟨F, hF, hΓ, nhϕ⟩ := h
       let valuation := @filter_quot_var _ _ hF.left.left
 
       -- the assumption that Γ ⊨ ϕ is specialised to LT/F and valuation
