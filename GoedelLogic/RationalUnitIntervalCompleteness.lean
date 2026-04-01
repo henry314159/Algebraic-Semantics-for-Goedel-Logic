@@ -6,6 +6,8 @@ import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Finset.Max
 import Mathlib.Logic.Denumerable
 
+-- Older than RationalUnitIntervalCompleteness.lean
+
 set_option pp.proofs true
 
 variable {α : Type} [LAlgebra α]
@@ -647,16 +649,12 @@ lemma embed_order {hChain : chain α} {I : ℕ → α} {hI1 : Function.Bijective
   intro a b hab
   by_cases hab' : a = b
   · rw [hab']
-  · have hab : a < b := by
-      rw [lt_iff_le_and_ne]
-      exact And.intro hab hab'
-    rw [le_iff_eq_or_lt]
-    exact Or.inr (embed_order_strict a b hab)
+  · have hab : a < b := by simp [lt_iff_le_and_ne, hab, hab']
+    simp [le_iff_eq_or_lt, embed_order_strict a b hab]
 
 lemma my_min_eq_bot {hChain : chain α} {a b : α} : a ⊓ b = Bot.bot → a = Bot.bot ∨ b = Bot.bot := by
   intro h
-  let hChain := hChain a b
-  cases hChain
+  cases hChain a b
   · rename_i h1
     have temp : a ⊓ b = a := by simp [h1]
     rw [h] at temp
@@ -811,7 +809,7 @@ lemma embed_inj {hChain : chain α} {I : ℕ → α} {hI1 : Function.Bijective I
       exact temp
     exact hEmbed.right temp
 
-lemma embed_homo{hChain : chain α} {I : ℕ → α} {hI1 : Function.Bijective I} {hI2 : I01 I} : Q_homomorphism (@embed _ _ hChain _ hI1 hI2) := by
+lemma embed_homo {hChain : chain α} {I : ℕ → α} {hI1 : Function.Bijective I} {hI2 : I01 I} : Q_homomorphism (@embed _ _ hChain _ hI1 hI2) := by
   apply And.intro
   · exact embed_top
   · apply And.intro
