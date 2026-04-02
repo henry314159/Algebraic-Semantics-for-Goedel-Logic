@@ -114,7 +114,6 @@ noncomputable instance decidable_gt (I : α → S N) (n : S N) :
   · exact isTrue h
   · exact isFalse h
 
-
 noncomputable def B (I : α → S N) (n : S N) : Finset α :=
   (A I n).filter (fun a => a < I.invFun n)
 
@@ -153,41 +152,67 @@ noncomputable def embed_helper {hChain : chain α} {I : α → S N} {bij: I.Bije
     · sorry
     · sorry
 
-noncomputable def embed {hChain : chain α} {I : α → S N} {bij: I.Bijective}
+noncomputable def embed {hChain : chain α} {I : α → S N} {bij : I.Bijective}
   {hI2 : h01 (hN := hN) I} (a : α) : Q :=
   @embed_helper α _ N hN hChain I bij hI2 (I a)
 
-lemma embed_top {hChain : chain α} {I : α → S N} {bij: I.Bijective}
+lemma embed_top {hChain : chain α} {I : α → S N} {bij : I.Bijective}
   {hI2 : h01 I} :
-  @embed α _ N hN hChain I bij hI2 Top.top = Top.top := sorry
+  @embed α _ N hN hChain I bij hI2 Top.top = Top.top := by
+  rw [embed, hI2.right, embed_helper]
+  rfl
 
-lemma embed_bot {hChain : chain α} {I : α → S N} {bij: I.Bijective}
+lemma embed_bot {hChain : chain α} {I : α → S N} {bij : I.Bijective}
   {hI2 : h01 I} :
-  @embed α _ N hN hChain I bij hI2 Bot.bot = Bot.bot := sorry
+  @embed α _ N hN hChain I bij hI2 Bot.bot = Bot.bot := by
+  rw [embed, hI2.left, embed_helper]
+  rfl
 
-lemma embed_helper_order_helper {hChain : chain α} {I : α → S N} {bij: I.Bijective}
+lemma embed_helper_order_helper {hChain : chain α} {I : α → S N} {bij : I.Bijective}
   {hI2 : h01 I} :
   ∀ (k : ℕ), ∀ (m n : S N), m ≤ k → n ≤ k → I.invFun m < I.invFun n →
     @embed_helper α _ N hN hChain I bij hI2 m <
     @embed_helper α _ N hN hChain I bij hI2 n := by sorry
 
-lemma embed_helper_order {hChain : chain α} {I : α → S N} {bij: I.Bijective}
+lemma embed_helper_order {hChain : chain α} {I : α → S N} {bij : I.Bijective}
   {hI2 : h01 I} :
   ∀ (m n : S N), I.invFun m < I.invFun n →
     @embed_helper α _ N hN hChain I bij hI2 m <
-    @embed_helper α _ N hN hChain I bij hI2 n := by sorry
+    @embed_helper α _ N hN hChain I bij hI2 n := by
+    intro m n hmn
+    exact embed_helper_order_helper (max m n) m n le_sup_left le_sup_right hmn
 
-lemma embed_order_strict {hChain : chain α} {I : α → S N} {bij: I.Bijective}
+lemma embed_order_strict {hChain : chain α} {I : α → S N} {bij : I.Bijective}
   {hI2 : h01 I} :
   ∀ (a b : α), a < b →
   @embed α _ N hN hChain I bij hI2 a <
-  @embed α _ N hN hChain I bij hI2 b := sorry
+  @embed α _ N hN hChain I bij hI2 b := by
+  intro a b hab
+  unfold embed
+  have hinv : I.invFun ∘ I = id := Function.invFun_comp bij.left
+  have ha : (I.invFun ∘ I) a = a := by
+    rw [hinv]
+    rfl
+  have ha : I.invFun (I a) = a := ha
+  have hb : (I.invFun ∘ I) b = b := by
+    rw [hinv]
+    rfl
+  have hb : I.invFun (I b) = b := hb
+  have hab : I.invFun (I a) < I.invFun (I b) := by
+    rw [ha, hb]
+    exact hab
+  exact @embed_helper_order _ _ N hN hChain I bij hI2 (I a) (I b) hab
 
-lemma embed_order {hChain : chain α} {I : α → S N} {bij: I.Bijective}
+lemma embed_order {hChain : chain α} {I : α → S N} {bij : I.Bijective}
   {hI2 : h01 I} :
   ∀ (a b : α), a ≤ b →
   @embed α _ N hN hChain I bij hI2 a ≤
-  @embed α _ N hN hChain I bij hI2 b := sorry
+  @embed α _ N hN hChain I bij hI2 b := by
+  intro a b hab
+  by_cases hab' : a = b
+  · rw [hab']
+  · have hab : a < b := by simp [lt_iff_le_and_ne, hab, hab']
+    simp [le_iff_eq_or_lt, embed_order_strict a b hab]
 
 lemma my_min_eq_bot {hChain : chain α} {a b : α} : a ⊓ b = Bot.bot → a = Bot.bot ∨ b = Bot.bot := by
   intro h
@@ -201,14 +226,14 @@ lemma my_min_eq_bot {hChain : chain α} {a b : α} : a ⊓ b = Bot.bot → a = B
     rw [h] at temp
     simp [temp]
 
-lemma embed_inf {hChain : chain α} {I : α → S N} {bij: I.Bijective}
+lemma embed_inf {hChain : chain α} {I : α → S N} {bij : I.Bijective}
   {hI2 : h01 I} :
   ∀ (a b : α),
   @embed α _ N hN hChain I bij hI2 (a ⊓ b) =
   @embed α _ N hN hChain I bij hI2 a ⊓
   @embed α _ N hN hChain I bij hI2 b := sorry
 
-lemma embed_sup {hChain : chain α} {I : α → S N} {bij: I.Bijective}
+lemma embed_sup {hChain : chain α} {I : α → S N} {bij : I.Bijective}
   {hI2 : h01 I} :
   ∀ (a b : α),
   @embed α _ N hN hChain I bij hI2 (a ⊔ b) =
@@ -258,14 +283,14 @@ lemma chain_himp {hChain : chain α} {a b : α} : ¬ (a ≤ b) → a ⇨ b = b :
     exact h1
   · exact le_himp
 
-lemma embed_to {hChain : chain α} {I : α → S N} {bij: I.Bijective}
+lemma embed_to {hChain : chain α} {I : α → S N} {bij : I.Bijective}
   {hI2 : h01 I} :
   ∀ (a b : α),
   @embed α _ N hN hChain I bij hI2 (a ⇨ b) =
   @embed α _ N hN hChain I bij hI2 a ⇨
   @embed α _ N hN hChain I bij hI2 b := sorry
 
-lemma embed_inj {hChain : chain α} {I : α → S N} {bij: I.Bijective}
+lemma embed_inj {hChain : chain α} {I : α → S N} {bij : I.Bijective}
   {hI2 : h01 I} :
   (@embed α _ N hN hChain I bij hI2).Injective := sorry
 
@@ -276,7 +301,7 @@ def Q_homomorphism (f : α → Q) : Prop := f Top.top = Top.top ∧
                 f (a ⊔ b) = f a ⊔ f b ∧
                 f (a ⇨ b) = f a ⇨ f b
 
-lemma embed_homo {hChain : chain α} {I : α → S N} {bij: I.Bijective}
+lemma embed_homo {hChain : chain α} {I : α → S N} {bij : I.Bijective}
   {hI2 : h01 I} :
   Q_homomorphism (@embed α _ N hN hChain I bij hI2) := by
   apply And.intro
