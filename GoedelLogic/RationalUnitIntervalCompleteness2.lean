@@ -231,14 +231,50 @@ lemma embed_inf {hChain : chain α} {I : α → S N} {bij : I.Bijective}
   ∀ (a b : α),
   @embed α _ N hN hChain I bij hI2 (a ⊓ b) =
   @embed α _ N hN hChain I bij hI2 a ⊓
-  @embed α _ N hN hChain I bij hI2 b := sorry
+  @embed α _ N hN hChain I bij hI2 b := by
+  intro a b
+  by_cases h : a ≤ b
+  · have h1 : @embed α _ N hN hChain I bij hI2 a ≤
+              embed b :=
+              @embed_order α _ N hN hChain I bij hI2 a b h
+    simp [h]
+    exact h1
+  · have h1 : b ≤ a := by
+      have temp : a ≤ b ∨ b ≤ a := hChain a b
+      by_contra
+      have h2 : ¬a≤b ∧ ¬b≤a := And.intro h this
+      rw [or_iff_not_and_not] at temp
+      exact temp h2
+    have h2 : @embed α _ N hN hChain I bij hI2 b ≤
+              embed a :=
+              @embed_order α _ N hN hChain I bij hI2 b a h1
+    simp [h1]
+    exact h2
 
 lemma embed_sup {hChain : chain α} {I : α → S N} {bij : I.Bijective}
   {hI2 : h01 I} :
   ∀ (a b : α),
   @embed α _ N hN hChain I bij hI2 (a ⊔ b) =
   @embed α _ N hN hChain I bij hI2 a ⊔
-  @embed α _ N hN hChain I bij hI2 b := sorry
+  @embed α _ N hN hChain I bij hI2 b := by
+  intro a b
+  by_cases h : a ≤ b
+  · have h1 : @embed α _ N hN hChain I bij hI2 a ≤
+              embed b :=
+              @embed_order α _ N hN hChain I bij hI2 a b h
+    simp [h]
+    exact h1
+  · have h1 : b ≤ a := by
+      have temp : a ≤ b ∨ b ≤ a := hChain a b
+      by_contra
+      have h2 : ¬a≤b ∧ ¬b≤a := And.intro h this
+      rw [or_iff_not_and_not] at temp
+      exact temp h2
+    have h2 : @embed α _ N hN hChain I bij hI2 b ≤
+              embed a :=
+              @embed_order α _ N hN hChain I bij hI2 b a h1
+    simp [h1]
+    exact h2
 
 lemma chain_himp {hChain : chain α} {a b : α} : ¬ (a ≤ b) → a ⇨ b = b := by
   intro hab
@@ -288,11 +324,77 @@ lemma embed_to {hChain : chain α} {I : α → S N} {bij : I.Bijective}
   ∀ (a b : α),
   @embed α _ N hN hChain I bij hI2 (a ⇨ b) =
   @embed α _ N hN hChain I bij hI2 a ⇨
-  @embed α _ N hN hChain I bij hI2 b := sorry
+  @embed α _ N hN hChain I bij hI2 b := by
+  intro a b
+  cases hChain a b
+  · rename_i hab
+    have h1 : @embed α _ N hN hChain I bij hI2 a ≤
+              embed b :=
+              @embed_order α _ N hN hChain I bij hI2 a b hab
+    have h2 : a ⇨ b = (⊤ : α) := by simp [hab]
+    rw [h2]
+    simp [himp, himp_Q]
+    split_ifs
+    · exact embed_top
+  · rename_i hba
+    rw [le_iff_lt_or_eq] at hba
+    cases hba
+    · rename_i hba
+      have h1 : @embed α _ N hN hChain I bij hI2 b <
+                embed a :=
+                @embed_order_strict α _ N hN hChain I bij hI2 b a hba
+      rw [lt_iff_le_not_ge] at hba
+      simp [himp, himp_Q]
+      have h2 : a ⇨ b = b := @chain_himp _ _ hChain a b hba.right
+      rw [h2]
+      have hEmbed : ¬ (@embed α _ N hN hChain I bij hI2 a ≤ @embed α _ N hN hChain I bij hI2 b) := by
+        rw [not_le]
+        exact h1
+      split_ifs
+      · rfl
+    · rename_i hba
+      have hba := hba.symm
+      have hab : a ≤ b := by simp [hba]
+      have h1 : @embed α _ N hN hChain I bij hI2 a ≤
+                embed b :=
+                @embed_order α _ N hN hChain I bij hI2 a b hab
+      have h2 : a ⇨ b = (⊤ : α) := by simp [hab]
+      rw [h2]
+      simp [himp, himp_Q]
+      split_ifs
+      · exact embed_top
 
 lemma embed_inj {hChain : chain α} {I : α → S N} {bij : I.Bijective}
   {hI2 : h01 I} :
-  (@embed α _ N hN hChain I bij hI2).Injective := sorry
+  (@embed α _ N hN hChain I bij hI2).Injective := by
+  intro a b hEmbed
+  by_contra
+  cases hChain a b
+  · rename_i hab
+    have hab : a < b := by
+      rw [lt_iff_le_and_ne]
+      exact And.intro hab this
+    have hEmbed : @embed α _ N hN hChain I bij hI2 a <
+                  embed b :=
+                  @embed_order_strict α _ N hN hChain I bij hI2 a b hab
+    rename_i temp _
+    rw [lt_iff_le_and_ne] at hEmbed
+    exact hEmbed.right temp
+  · rename_i hab
+    have this : ¬ b = a := by
+      apply Ne.symm
+      exact this
+    have hab : b < a := by
+      rw [lt_iff_le_and_ne]
+      exact And.intro hab this
+    have hEmbed : @embed α _ N hN hChain I bij hI2 b <
+                  embed a :=
+                  @embed_order_strict α _ N hN hChain I bij hI2 b a hab
+    rename_i temp _ _
+    rw [lt_iff_le_and_ne] at hEmbed
+    have temp : @embed α _ N hN hChain I bij hI2 b =
+                @embed α _ N hN hChain I bij hI2 a := temp.symm
+    exact hEmbed.right temp
 
 def Q_homomorphism (f : α → Q) : Prop := f Top.top = Top.top ∧
                 f Bot.bot = Bot.bot ∧
