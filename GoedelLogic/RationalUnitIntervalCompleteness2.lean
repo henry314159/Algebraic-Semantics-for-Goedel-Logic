@@ -93,6 +93,27 @@ def h01 (I : α → S N) : Prop :=
   I Bot.bot = ⟨0, mem_S' N 0 1 zero_lt_one hN⟩ ∧
   I Top.top = ⟨1, mem_S N 1 hN⟩
 
+lemma h01' (I : α → S N) (h : @h01 α _ N hN I) (bij : I.Bijective) :
+  I.invFun ⟨0, mem_S' N 0 1 zero_lt_one hN⟩ = Bot.bot ∧
+  I.invFun ⟨1, mem_S N 1 hN⟩ = Top.top := by
+  apply And.intro
+  · have temp : I (I.invFun ⟨0, mem_S' N 0 1 zero_lt_one hN⟩) =
+                ⟨0, mem_S' N 0 1 zero_lt_one hN⟩ := by
+      apply Function.invFun_eq
+      exact bij.right ⟨0, mem_S' N 0 1 zero_lt_one hN⟩
+    have temp' : I (I.invFun ⟨0, mem_S' N 0 1 zero_lt_one hN⟩) = I ⊥ := by
+      rw [h.left]
+      exact temp
+    exact bij.left temp'
+  · have temp : I (I.invFun ⟨1, mem_S N 1 hN⟩) =
+                ⟨1, mem_S N 1 hN⟩ := by
+      apply Function.invFun_eq
+      exact bij.right ⟨1, mem_S N 1 hN⟩
+    have temp' : I (I.invFun ⟨1, mem_S N 1 hN⟩) = I ⊤ := by
+      rw [h.right]
+      exact temp
+    exact bij.left temp'
+
 noncomputable def A (I : α → S N) (n : S N) : Finset α :=
   Finset.image I.invFun (@Set.toFinset (S N) (range N n) (Fintype.ofFinite (range N n)))
 
@@ -282,9 +303,170 @@ lemma embed_bot {hChain : chain α} {I : α → S N} {bij : I.Bijective}
 
 lemma embed_helper_order_helper {hChain : chain α} {I : α → S N} {bij : I.Bijective}
   {hI2 : h01 I} :
-  ∀ (k : ℕ), ∀ (m n : S N), m ≤ k → n ≤ k → I.invFun m < I.invFun n →
+  ∀ (k : ℕ), ∀ (m n : S N), m.val ≤ k → n.val ≤ k → I.invFun m < I.invFun n →
     @embed_helper α _ N hN hChain I bij hI2 m <
-    @embed_helper α _ N hN hChain I bij hI2 n := by sorry
+    @embed_helper α _ N hN hChain I bij hI2 n := by
+  intro k
+  induction k with
+  | zero =>
+      intro m n hm hn hI
+      exfalso
+      have hm : m = ⟨0, mem_S' N 0 1 zero_lt_one hN⟩ := by
+        obtain ⟨_, _⟩ := m
+        simp
+        simp at hm
+        exact hm
+      have hn : n = ⟨0, mem_S' N 0 1 zero_lt_one hN⟩ := by
+        obtain ⟨_, _⟩ := n
+        simp
+        simp at hn
+        exact hn
+      rw [hm, hn] at hI
+      rw [← @lt_self_iff_false α]
+      exact hI
+  | succ k ih =>
+      intro m n
+      obtain ⟨m, hm⟩ := m
+      obtain ⟨n, hn⟩ := n
+      by_cases hk : k + 1 < N
+      · by_cases hm' : m = k + 1
+        · by_cases hn' : n = k + 1
+          · intro _ _ hI
+            have hm' : (⟨m, hm⟩ : S N) = ⟨k + 1, hk⟩ := by simp [hm']
+            have hn' : (⟨n, hn⟩ : S N) = ⟨k + 1, hk⟩ := by simp [hn']
+            rw [hm', hn'] at hI
+            exfalso
+            rw [← @lt_self_iff_false α]
+            exact hI
+          · intro hm'' hn'' hmn
+            have hn''' : n < k + 1 := by
+              rw [lt_iff_le_and_ne]
+              exact And.intro hn'' hn'
+            have hn''' : n ≤ k := by
+              rw [Nat.le_iff_lt_add_one]
+              exact hn'''
+            unfold embed_helper
+            split
+            · exfalso
+              rename_i hm0
+              rw [hm0] at hmn
+              simp at hm0
+              rw [hm0] at hm'
+              have hntemp : n = 0 := by
+                rw [← hm'] at hn''
+                rw [← Nat.le_zero]
+                exact hn''
+              rw [← hm'] at hn'
+              exact hn' hntemp
+            · exfalso
+              rename_i hm1
+              simp at hm1
+              rw [hm1] at hm'
+              have hk : k = 0 := by
+                rw [← right_eq_add]
+                exact hm'
+              have hntemp : n = 0 := by
+                rw [hk] at hn'''
+                rw [← Nat.le_zero]
+                exact hn'''
+              have hntemp : @Subtype.mk ℕ (fun x => x ∈ S N) n hn = ⟨0, mem_S' N 0 1 zero_lt_one hN⟩ := by simp [hntemp]
+              have hmtemp : @Subtype.mk ℕ (fun x => x ∈ S N) m hm = ⟨1, mem_S N 1 hN⟩ := by simp [hm1]
+              rw [hntemp, hmtemp] at hmn
+              rw [(@h01' α _ N hN I hI2 bij).left] at hmn
+              rw [(@h01' α _ N hN I hI2 bij).right] at hmn
+              exact not_lt_bot hmn
+            · split
+              · exfalso
+                rename_i hn
+                rw [hn] at hmn
+                rw [(@h01' α _ N hN I hI2 bij).left] at hmn
+                exact not_lt_bot hmn
+              · rw [lt_iff_le_and_ne]
+                apply And.intro
+                · exact le_top
+                · by_contra
+                  sorry -- main exclusion case 1
+              · sorry -- main case 1
+        · by_cases hn' : n = k + 1
+          · intro hm'' hn'' hmn
+            have hm''' : m < k + 1 := by
+              rw [lt_iff_le_and_ne]
+              exact And.intro hm'' hm'
+            have hm''' : m ≤ k := by
+              rw [Nat.le_iff_lt_add_one]
+              exact hm'''
+            unfold embed_helper
+            split
+            · split
+              · exfalso
+                rename_i hn
+                rw [hn] at hmn
+                rw [(@h01' α _ N hN I hI2 bij).left] at hmn
+                exact not_lt_bot hmn
+              · simp
+              · rw [lt_iff_le_and_ne]
+                apply And.intro
+                · exact bot_le
+                · apply Ne.symm
+                  by_contra
+                  sorry -- main exclusion case 2
+            · exfalso
+              rename_i hm1
+              have hmtemp : @Subtype.mk ℕ (fun x => x ∈ S N) m hm = ⟨1, mem_S N 1 hN⟩ := by simp [hm1]
+              rw [hm1] at hmn
+              rw [(@h01' α _ N hN I hI2 bij).right] at hmn
+              exact not_top_lt hmn
+            · split
+              · exfalso
+                rename_i hn0
+                have hntemp : @Subtype.mk ℕ (fun x => x ∈ S N) n hn = ⟨0, mem_S' N 0 1 zero_lt_one hN⟩ := by simp [hn0]
+                rw [hntemp] at hmn
+                rw [(@h01' α _ N hN I hI2 bij).left] at hmn
+                exact not_lt_bot hmn
+              · exfalso
+                rename_i hmtemp _ _ _ hmy _ _ hntemp
+                simp at hntemp
+                rw [hntemp] at hn'
+                rw [←hn'] at hmtemp
+                simp at hmy
+                rw [hmy] at hmtemp
+                simp at hmtemp
+              · sorry -- main case 2
+          · intro hm'' hn'' hmn
+            have hm''' : m < k + 1 := by
+              rw [lt_iff_le_and_ne]
+              exact And.intro hm'' hm'
+            have hm''' : m ≤ k := by
+              rw [Nat.le_iff_lt_add_one]
+              exact hm'''
+            have hn''' : n < k + 1 := by
+              rw [lt_iff_le_and_ne]
+              exact And.intro hn'' hn'
+            have hn''' : n ≤ k := by
+              rw [Nat.le_iff_lt_add_one]
+              exact hn'''
+            exact ih ⟨m, hm⟩ ⟨n, hn⟩ hm''' hn''' hmn
+      · simp at hk
+        have hmk : (m : WithTop ℕ) < (k : WithTop ℕ) + 1 := lt_of_lt_of_le hm hk
+        have hmk : (m : WithTop ℕ) ≤ (k : WithTop ℕ) := by
+          rw [Nat.cast_le]
+          rw [Nat.le_iff_lt_add_one]
+          rw [← WithTop.coe_lt_coe]
+          exact hmk
+        have hm' : @Subtype.val ℕ (fun x => x ∈ S N) ⟨m, hm⟩ ≤ k := by
+          rw [← WithTop.coe_le_coe]
+          exact hmk
+        have hnk : (n : WithTop ℕ) < (k : WithTop ℕ) + 1 := lt_of_lt_of_le hn hk
+        have hnk : (n : WithTop ℕ) ≤ (k : WithTop ℕ) := by
+          rw [Nat.cast_le]
+          rw [Nat.le_iff_lt_add_one]
+          rw [← WithTop.coe_lt_coe]
+          exact hnk
+        have hn' : @Subtype.val ℕ (fun x => x ∈ S N) ⟨n, hn⟩ ≤ k := by
+          rw [← WithTop.coe_le_coe]
+          exact hnk
+        intro _ _ h
+        exact ih ⟨m, hm⟩ ⟨n, hn⟩ hm' hn' h
 
 lemma embed_helper_order {hChain : chain α} {I : α → S N} {bij : I.Bijective}
   {hI2 : h01 I} :
