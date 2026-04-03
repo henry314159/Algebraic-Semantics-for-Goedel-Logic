@@ -22,9 +22,9 @@ noncomputable instance linear_order_chain {h : chain α} : LinearOrder α := {
       have h2 : b ≤ a := by
         specialize h a b
         by_contra
-        have temp : ¬a ≤ b ∧ ¬b ≤ a := And.intro h1 this
+        have notChain : ¬a ≤ b ∧ ¬b ≤ a := And.intro h1 this
         rw [or_iff_not_and_not] at h
-        exact h temp
+        exact h notChain
       simp [h2]
   max_def := λ a b => by
     split_ifs
@@ -34,9 +34,9 @@ noncomputable instance linear_order_chain {h : chain α} : LinearOrder α := {
       have h2 : b ≤ a := by
         specialize h a b
         by_contra
-        have temp : ¬a ≤ b ∧ ¬b ≤ a := And.intro h1 this
+        have notChain : ¬a ≤ b ∧ ¬b ≤ a := And.intro h1 this
         rw [or_iff_not_and_not] at h
-        exact h temp
+        exact h notChain
       simp [h2]
   le_total := h
   toDecidableLE := by
@@ -58,9 +58,7 @@ lemma mem_range (N : WithTop ℕ) (n : ℕ) (x : range N n) : x < n := by
 
 lemma y_mem_S (N : WithTop ℕ) (n : S N) (y : ℕ) (hy : y < n) : y ∈ S N := by
   obtain ⟨n, hn⟩ := n
-  simp [S] at hn
-  simp at hy
-  simp [S]
+  simp [S] at *
   have hy : (y : WithTop ℕ) < n := by simp [hy]
   exact lt_trans hy hn
 
@@ -75,11 +73,7 @@ instance range_fin (N : WithTop ℕ) (n : S N) : Finite (range N n) := by
   apply Nonempty.intro
   exact range_equiv N n
 
-lemma mem_S (N : WithTop ℕ) (n : ℕ) (hN : n < N) : n ∈ S N := by
-  simp [S]
-  exact hN
-
-lemma mem_S' (N : WithTop ℕ) (n : ℕ) (x : ℕ) (hn : n < x) (hN : x < N) : n ∈ S N := by
+lemma mem_S (N : WithTop ℕ) (n : ℕ) (x : ℕ) (hn : n < x) (hN : x < N) : n ∈ S N := by
   simp [S]
   have hn : (n : WithTop ℕ) < x := by simp [hn]
   exact lt_trans hn hN
@@ -88,29 +82,24 @@ variable {N : WithTop ℕ}
 variable {hN : 1 < N}
 
 def h01 (I : α → S N) : Prop :=
-  I Bot.bot = ⟨0, mem_S' N 0 1 zero_lt_one hN⟩ ∧
-  I Top.top = ⟨1, mem_S N 1 hN⟩
+  I Bot.bot = ⟨0, mem_S N 0 1 zero_lt_one hN⟩ ∧
+  I Top.top = ⟨1, hN⟩
 
 lemma h01' (I : α → S N) (h : @h01 α _ N hN I) (bij : I.Bijective) :
-  I.invFun ⟨0, mem_S' N 0 1 zero_lt_one hN⟩ = Bot.bot ∧
-  I.invFun ⟨1, mem_S N 1 hN⟩ = Top.top := by
+  I.invFun ⟨0, mem_S N 0 1 zero_lt_one hN⟩ = Bot.bot ∧
+  I.invFun ⟨1, hN⟩ = Top.top := by
+  have h0 := mem_S N 0 1 zero_lt_one hN
   apply And.intro
-  · have temp : I (I.invFun ⟨0, mem_S' N 0 1 zero_lt_one hN⟩) =
-                ⟨0, mem_S' N 0 1 zero_lt_one hN⟩ := by
+  · have temp : I (I.invFun ⟨0, h0⟩) = ⟨0, h0⟩ := by
       apply Function.invFun_eq
-      exact bij.right ⟨0, mem_S' N 0 1 zero_lt_one hN⟩
-    have temp' : I (I.invFun ⟨0, mem_S' N 0 1 zero_lt_one hN⟩) = I ⊥ := by
-      rw [h.left]
-      exact temp
-    exact bij.left temp'
-  · have temp : I (I.invFun ⟨1, mem_S N 1 hN⟩) =
-                ⟨1, mem_S N 1 hN⟩ := by
+      exact bij.right ⟨0, h0⟩
+    nth_rewrite 2 [← h.left] at temp
+    exact bij.left temp
+  · have temp : I (I.invFun ⟨1, hN⟩) = ⟨1, hN⟩ := by
       apply Function.invFun_eq
-      exact bij.right ⟨1, mem_S N 1 hN⟩
-    have temp' : I (I.invFun ⟨1, mem_S N 1 hN⟩) = I ⊤ := by
-      rw [h.right]
-      exact temp
-    exact bij.left temp'
+      exact bij.right ⟨1, hN⟩
+    nth_rewrite 2 [← h.right] at temp
+    exact bij.left temp
 
 noncomputable def A (I : α → S N) (n : S N) : Finset α :=
   Finset.image I.invFun (@Set.toFinset (S N) (range N n) (Fintype.ofFinite (range N n)))
@@ -138,20 +127,17 @@ noncomputable def B (I : α → S N) (n : S N) : Finset α :=
 
 lemma hB {I : α → S N} {bij : I.Bijective}
   {hI2 : h01 (hN := hN) I} (n : S N) :
-  ⟨1, mem_S N 1 hN⟩ < n → (B I n).Nonempty := by
+  ⟨1, hN⟩ < n → (B I n).Nonempty := by
+  have h0 := mem_S N 0 1 zero_lt_one hN
   intro hn
   exists Bot.bot
-  unfold B
-  rw [Finset.mem_filter]
+  rw [B, Finset.mem_filter]
   apply And.intro
-  · unfold A
-    rw [Finset.mem_image]
-    exists ⟨0, mem_S' N 0 1 zero_lt_one hN⟩
+  · rw [A, Finset.mem_image]
+    exists ⟨0, h0⟩
     apply And.intro
     · simp [range]
-      have temp : (⟨0, mem_S' N 0 1 zero_lt_one hN⟩ : S N) <
-                  ⟨1, mem_S N 1 hN⟩ := by simp
-      exact lt_trans temp hn
+      exact lt_trans (by simp) hn
     · have hinv : I.invFun ∘ I = id := Function.invFun_comp bij.left
       have hbot : (I.invFun ∘ I) ⊥ = (⊥ : α) := by
         rw [hinv]
@@ -175,15 +161,13 @@ noncomputable def C {N : WithTop ℕ} (I : α → S N) (n : S N) : Finset α :=
 
 lemma hC {I : α → S N} {bij : I.Bijective}
   {hI2 : h01 (hN := hN) I} (n : S N) :
-  ⟨1, mem_S N 1 hN⟩ < n → (C I n).Nonempty := by
+  ⟨1, hN⟩ < n → (C I n).Nonempty := by
   intro hn
   exists Top.top
-  unfold C
-  rw [Finset.mem_filter]
+  rw [C, Finset.mem_filter]
   apply And.intro
-  · unfold A
-    rw [Finset.mem_image]
-    exists ⟨1, mem_S N 1 hN⟩
+  · rw [A, Finset.mem_image]
+    exists ⟨1, hN⟩
     apply And.intro
     · simp [range]
       exact hn
@@ -206,11 +190,11 @@ lemma hC {I : α → S N} {bij : I.Bijective}
     simp at hn
 
 noncomputable def ai {hChain : chain α} {I : α → S N} {bij: I.Bijective}
-  {hI2 : h01 I} (n : S N) (hn : ⟨1, mem_S N 1 hN⟩ < n) :=
+  {hI2 : h01 I} (n : S N) (hn : ⟨1, hN⟩ < n) :=
   @Finset.max' α (linear_order_chain (h := hChain)) (B I n) (@hB α _ N hN I bij hI2 n hn)
 
 noncomputable def aj {hChain : chain α} {I : α → S N} {bij: I.Bijective}
-  {hI2 : h01 I} (n : S N) (hn : ⟨1, mem_S N 1 hN⟩ < n) :=
+  {hI2 : h01 I} (n : S N) (hn : ⟨1, hN⟩ < n) :=
   @Finset.min' α (linear_order_chain (h := hChain)) (C I n) (@hC α _ N hN I bij hI2 n hn)
 
 lemma decreasing_ai {hChain : chain α} {I : α → S N} {bij : I.Bijective}
@@ -230,8 +214,10 @@ lemma decreasing_ai {hChain : chain α} {I : α → S N} {bij : I.Bijective}
     exact haux.left
   unfold A at hai
   rw [@Finset.mem_image (S N) α _ I.invFun
-      (@Set.toFinset (S N) (range N (y + 2))
-      (@Fintype.ofFinite (range N (y+2)) (range_fin N ⟨y + 2, hy⟩))) ai'] at hai
+      (@Set.toFinset (S N)
+      (range N (y + 2))
+      (@Fintype.ofFinite (range N (y + 2)) (range_fin N ⟨y + 2, hy⟩)))
+      ai'] at hai
   obtain ⟨a, ha1, ha2⟩ := hai
   have ha2 : I (I.invFun a) = I ai' := by rw [ha2]
   have temp : I (I.invFun a) = a := by
@@ -259,8 +245,10 @@ lemma decreasing_aj {hChain : chain α} {I : α → S N} {bij : I.Bijective}
     exact haux.left
   unfold A at haj
   rw [@Finset.mem_image (S N) α _ I.invFun
-      (@Set.toFinset (S N) (range N (y + 2))
-      (@Fintype.ofFinite (range N (y+2)) (range_fin N ⟨y + 2, hy⟩))) aj'] at haj
+      (@Set.toFinset (S N)
+      (range N (y + 2))
+      (@Fintype.ofFinite (range N (y + 2)) (range_fin N ⟨y + 2, hy⟩)))
+      aj'] at haj
   obtain ⟨a, ha1, ha2⟩ := haj
   have ha2 : I (I.invFun a) = I aj' := by rw [ha2]
   have temp : I (I.invFun a) = a := by
@@ -297,20 +285,17 @@ noncomputable def embed {hChain : chain α} {I : α → S N} {bij : I.Bijective}
   {hI2 : h01 (hN := hN) I} (a : α) : Q :=
   @embed_helper α _ N hN hChain I bij hI2 (I a)
 
-lemma embed_top {hChain : chain α} {I : α → S N} {bij : I.Bijective}
-  {hI2 : h01 I} :
+lemma embed_top {hChain : chain α} {I : α → S N} {bij : I.Bijective} {hI2 : h01 I} :
   @embed α _ N hN hChain I bij hI2 Top.top = Top.top := by
   rw [embed, hI2.right, embed_helper]
   rfl
 
-lemma embed_bot {hChain : chain α} {I : α → S N} {bij : I.Bijective}
-  {hI2 : h01 I} :
+lemma embed_bot {hChain : chain α} {I : α → S N} {bij : I.Bijective} {hI2 : h01 I} :
   @embed α _ N hN hChain I bij hI2 Bot.bot = Bot.bot := by
   rw [embed, hI2.left, embed_helper]
   rfl
 
-lemma embed_helper_order_helper {hChain : chain α} {I : α → S N} {bij : I.Bijective}
-  {hI2 : h01 I} :
+lemma embed_helper_order_helper {hChain : chain α} {I : α → S N} {bij : I.Bijective} {hI2 : h01 I} :
   ∀ (k : ℕ), ∀ (m n : S N), m.val ≤ k → n.val ≤ k → I.invFun m < I.invFun n →
     @embed_helper α _ N hN hChain I bij hI2 m <
     @embed_helper α _ N hN hChain I bij hI2 n := by
@@ -319,12 +304,12 @@ lemma embed_helper_order_helper {hChain : chain α} {I : α → S N} {bij : I.Bi
   | zero =>
       intro m n hm hn hI
       exfalso
-      have hm : m = ⟨0, mem_S' N 0 1 zero_lt_one hN⟩ := by
+      have hm : m = ⟨0, mem_S N 0 1 zero_lt_one hN⟩ := by
         obtain ⟨_, _⟩ := m
         simp
         simp at hm
         exact hm
-      have hn : n = ⟨0, mem_S' N 0 1 zero_lt_one hN⟩ := by
+      have hn : n = ⟨0, mem_S N 0 1 zero_lt_one hN⟩ := by
         obtain ⟨_, _⟩ := n
         simp
         simp at hn
@@ -377,8 +362,8 @@ lemma embed_helper_order_helper {hChain : chain α} {I : α → S N} {bij : I.Bi
                 rw [hk] at hn'''
                 rw [← Nat.le_zero]
                 exact hn'''
-              have hntemp : @Subtype.mk ℕ (fun x => x ∈ S N) n hn = ⟨0, mem_S' N 0 1 zero_lt_one hN⟩ := by simp [hntemp]
-              have hmtemp : @Subtype.mk ℕ (fun x => x ∈ S N) m hm = ⟨1, mem_S N 1 hN⟩ := by simp [hm1]
+              have hntemp : @Subtype.mk ℕ (fun x => x ∈ S N) n hn = ⟨0, mem_S N 0 1 zero_lt_one hN⟩ := by simp [hntemp]
+              have hmtemp : @Subtype.mk ℕ (fun x => x ∈ S N) m hm = ⟨1, hN⟩ := by simp [hm1]
               rw [hntemp, hmtemp] at hmn
               rw [(@h01' α _ N hN I hI2 bij).left] at hmn
               rw [(@h01' α _ N hN I hI2 bij).right] at hmn
@@ -407,9 +392,9 @@ lemma embed_helper_order_helper {hChain : chain α} {I : α → S N} {bij : I.Bi
                         (A I ⟨y.succ.succ, hy⟩) ai'] at haux
                     exact haux.right
                   rw [hmy, hntemp] at hmn
-                  have hai1 : ai' < I.invFun ⟨1, mem_S N 1 hN⟩ :=
+                  have hai1 : ai' < I.invFun ⟨1, hN⟩ :=
                     lt_trans hai1 hmn
-                  have hai1 : I.invFun (I ai') < I.invFun ⟨1, mem_S N 1 hN⟩ := by
+                  have hai1 : I.invFun (I ai') < I.invFun ⟨1, hN⟩ := by
                     have temp : I.invFun (I ai') = ai' := by
                       have hinv : I.invFun ∘ I = id := Function.invFun_comp bij.left
                       have hinv : (I.invFun ∘ I) ai' = ai' := by
@@ -433,15 +418,15 @@ lemma embed_helper_order_helper {hChain : chain α} {I : α → S N} {bij : I.Bi
                   simp at hntemp
                   rw [hntemp] at hn'''
                   have hai3 : @embed_helper α _ N hN hChain I bij hI2 (I ai') <
-                              @embed_helper α _ N hN hChain I bij hI2 ⟨1, mem_S N 1 hN⟩ :=
-                    ih (I ai') ⟨1, mem_S N 1 hN⟩ hai2 hn''' hai1
+                              @embed_helper α _ N hN hChain I bij hI2 ⟨1, hN⟩ :=
+                    ih (I ai') ⟨1, hN⟩ hai2 hn''' hai1
                   have temp : @embed α _ N hN hChain I bij hI2 (⊤ : α) =
-                              @embed_helper α _ N hN hChain I bij hI2 ⟨1, mem_S N 1 hN⟩ := by
+                              @embed_helper α _ N hN hChain I bij hI2 ⟨1, hN⟩ := by
                     unfold embed
                     rw [←(@h01' α _ N hN I hI2 bij).right]
-                    have temp : I (I.invFun ⟨1, mem_S N 1 hN⟩) = ⟨1, mem_S N 1 hN⟩ := by
+                    have temp : I (I.invFun ⟨1, hN⟩) = ⟨1, hN⟩ := by
                       apply Function.invFun_eq
-                      exact bij.right ⟨1, mem_S N 1 hN⟩
+                      exact bij.right ⟨1, hN⟩
                     rw [temp]
                   rw [← temp, embed_top] at hai3
                   rw [lt_iff_le_and_ne] at hai3
@@ -613,9 +598,9 @@ lemma embed_helper_order_helper {hChain : chain α} {I : α → S N} {bij : I.Bi
                         (A I ⟨y.succ.succ, hy⟩) aj'] at haux
                     exact haux.right
                   rw [hmtemp, hntemp] at hmn
-                  have haj1 : I.invFun ⟨0, mem_S' N 0 1 zero_lt_one hN⟩ < aj' :=
+                  have haj1 : I.invFun ⟨0, mem_S N 0 1 zero_lt_one hN⟩ < aj' :=
                     lt_trans hmn haj1
-                  have haj1 : I.invFun ⟨0, mem_S' N 0 1 zero_lt_one hN⟩ < I.invFun (I aj') := by
+                  have haj1 : I.invFun ⟨0, mem_S N 0 1 zero_lt_one hN⟩ < I.invFun (I aj') := by
                     have temp : I.invFun (I aj') = aj' := by
                       have hinv : I.invFun ∘ I = id := Function.invFun_comp bij.left
                       have hinv : (I.invFun ∘ I) aj' = aj' := by
@@ -638,30 +623,30 @@ lemma embed_helper_order_helper {hChain : chain α} {I : α → S N} {bij : I.Bi
                     exact haj2
                   simp at hmtemp
                   rw [hmtemp] at hm'''
-                  have haj3 : @embed_helper α _ N hN hChain I bij hI2 ⟨0, mem_S' N 0 1 zero_lt_one hN⟩ <
+                  have haj3 : @embed_helper α _ N hN hChain I bij hI2 ⟨0, mem_S N 0 1 zero_lt_one hN⟩ <
                               @embed_helper α _ N hN hChain I bij hI2 (I aj') :=
-                    ih ⟨0, mem_S' N 0 1 zero_lt_one hN⟩ (I aj') hm''' haj2 haj1
+                    ih ⟨0, mem_S N 0 1 zero_lt_one hN⟩ (I aj') hm''' haj2 haj1
                   have temp : @embed α _ N hN hChain I bij hI2 (⊥ : α) =
-                              @embed_helper α _ N hN hChain I bij hI2 ⟨0, mem_S' N 0 1 zero_lt_one hN⟩ := by
+                              @embed_helper α _ N hN hChain I bij hI2 ⟨0, mem_S N 0 1 zero_lt_one hN⟩ := by
                     unfold embed
                     rw [←(@h01' α _ N hN I hI2 bij).left]
-                    have temp : I (I.invFun ⟨0, mem_S' N 0 1 zero_lt_one hN⟩) = ⟨0, mem_S' N 0 1 zero_lt_one hN⟩ := by
+                    have temp : I (I.invFun ⟨0, mem_S N 0 1 zero_lt_one hN⟩) = ⟨0, mem_S N 0 1 zero_lt_one hN⟩ := by
                       apply Function.invFun_eq
-                      exact bij.right ⟨0, mem_S' N 0 1 zero_lt_one hN⟩
+                      exact bij.right ⟨0, mem_S N 0 1 zero_lt_one hN⟩
                     rw [temp]
                   rw [← temp, embed_bot] at haj3
                   rw [lt_iff_le_and_ne] at haj3
                   exact haj3.right this.right.symm
             · exfalso
               rename_i hm1
-              have hmtemp : @Subtype.mk ℕ (fun x => x ∈ S N) m hm = ⟨1, mem_S N 1 hN⟩ := by simp [hm1]
+              have hmtemp : @Subtype.mk ℕ (fun x => x ∈ S N) m hm = ⟨1, hN⟩ := by simp [hm1]
               rw [hm1] at hmn
               rw [(@h01' α _ N hN I hI2 bij).right] at hmn
               exact not_top_lt hmn
             · split
               · exfalso
                 rename_i hn0
-                have hntemp : @Subtype.mk ℕ (fun x => x ∈ S N) n hn = ⟨0, mem_S' N 0 1 zero_lt_one hN⟩ := by simp [hn0]
+                have hntemp : @Subtype.mk ℕ (fun x => x ∈ S N) n hn = ⟨0, mem_S N 0 1 zero_lt_one hN⟩ := by simp [hn0]
                 rw [hntemp] at hmn
                 rw [(@h01' α _ N hN I hI2 bij).left] at hmn
                 exact not_lt_bot hmn
@@ -838,16 +823,14 @@ lemma embed_helper_order_helper {hChain : chain α} {I : α → S N} {bij : I.Bi
         intro _ _ h
         exact ih ⟨m, hm⟩ ⟨n, hn⟩ hm' hn' h
 
-lemma embed_helper_order {hChain : chain α} {I : α → S N} {bij : I.Bijective}
-  {hI2 : h01 I} :
+lemma embed_helper_order {hChain : chain α} {I : α → S N} {bij : I.Bijective} {hI2 : h01 I} :
   ∀ (m n : S N), I.invFun m < I.invFun n →
     @embed_helper α _ N hN hChain I bij hI2 m <
     @embed_helper α _ N hN hChain I bij hI2 n := by
     intro m n hmn
     exact embed_helper_order_helper (max m n) m n le_sup_left le_sup_right hmn
 
-lemma embed_order_strict {hChain : chain α} {I : α → S N} {bij : I.Bijective}
-  {hI2 : h01 I} :
+lemma embed_order_strict {hChain : chain α} {I : α → S N} {bij : I.Bijective} {hI2 : h01 I} :
   ∀ (a b : α), a < b →
   @embed α _ N hN hChain I bij hI2 a <
   @embed α _ N hN hChain I bij hI2 b := by
@@ -867,8 +850,7 @@ lemma embed_order_strict {hChain : chain α} {I : α → S N} {bij : I.Bijective
     exact hab
   exact @embed_helper_order _ _ N hN hChain I bij hI2 (I a) (I b) hab
 
-lemma embed_order {hChain : chain α} {I : α → S N} {bij : I.Bijective}
-  {hI2 : h01 I} :
+lemma embed_order {hChain : chain α} {I : α → S N} {bij : I.Bijective} {hI2 : h01 I} :
   ∀ (a b : α), a ≤ b →
   @embed α _ N hN hChain I bij hI2 a ≤
   @embed α _ N hN hChain I bij hI2 b := by
@@ -890,8 +872,7 @@ lemma my_min_eq_bot {hChain : chain α} {a b : α} : a ⊓ b = Bot.bot → a = B
     rw [h] at temp
     simp [temp]
 
-lemma embed_inf {hChain : chain α} {I : α → S N} {bij : I.Bijective}
-  {hI2 : h01 I} :
+lemma embed_inf {hChain : chain α} {I : α → S N} {bij : I.Bijective} {hI2 : h01 I} :
   ∀ (a b : α),
   @embed α _ N hN hChain I bij hI2 (a ⊓ b) =
   @embed α _ N hN hChain I bij hI2 a ⊓
@@ -915,8 +896,7 @@ lemma embed_inf {hChain : chain α} {I : α → S N} {bij : I.Bijective}
     simp [h1]
     exact h2
 
-lemma embed_sup {hChain : chain α} {I : α → S N} {bij : I.Bijective}
-  {hI2 : h01 I} :
+lemma embed_sup {hChain : chain α} {I : α → S N} {bij : I.Bijective} {hI2 : h01 I} :
   ∀ (a b : α),
   @embed α _ N hN hChain I bij hI2 (a ⊔ b) =
   @embed α _ N hN hChain I bij hI2 a ⊔
@@ -983,8 +963,7 @@ lemma chain_himp {hChain : chain α} {a b : α} : ¬ (a ≤ b) → a ⇨ b = b :
     exact h1
   · exact le_himp
 
-lemma embed_to {hChain : chain α} {I : α → S N} {bij : I.Bijective}
-  {hI2 : h01 I} :
+lemma embed_to {hChain : chain α} {I : α → S N} {bij : I.Bijective} {hI2 : h01 I} :
   ∀ (a b : α),
   @embed α _ N hN hChain I bij hI2 (a ⇨ b) =
   @embed α _ N hN hChain I bij hI2 a ⇨
@@ -1028,8 +1007,7 @@ lemma embed_to {hChain : chain α} {I : α → S N} {bij : I.Bijective}
       split_ifs
       · exact embed_top
 
-lemma embed_inj {hChain : chain α} {I : α → S N} {bij : I.Bijective}
-  {hI2 : h01 I} :
+lemma embed_inj {hChain : chain α} {I : α → S N} {bij : I.Bijective} {hI2 : h01 I} :
   (@embed α _ N hN hChain I bij hI2).Injective := by
   intro a b hEmbed
   by_contra
@@ -1067,8 +1045,7 @@ def Q_homomorphism (f : α → Q) : Prop := f Top.top = Top.top ∧
                 f (a ⊔ b) = f a ⊔ f b ∧
                 f (a ⇨ b) = f a ⇨ f b
 
-lemma embed_homo {hChain : chain α} {I : α → S N} {bij : I.Bijective}
-  {hI2 : h01 I} :
+lemma embed_homo {hChain : chain α} {I : α → S N} {bij : I.Bijective} {hI2 : h01 I} :
   Q_homomorphism (@embed α _ N hN hChain I bij hI2) := by
   apply And.intro
   · exact embed_top
@@ -1182,7 +1159,7 @@ lemma swapped_restricted_normal_encoding_bij [Fintype α] {hChain : chain α} :
   exact @restricted_normal_encoding_bij α _ _ hChain
 
 noncomputable def finite_encoding [Fintype α] (a : α) : S (Fintype.card α) :=
-  ⟨swapped_restricted_normal_encoding a, by simp [mem_S]⟩
+  ⟨swapped_restricted_normal_encoding a, by simp [S]⟩
 
 instance card_equiv [Fintype α] : S ((Fintype.card α)) ≃ Fin (Fintype.card α) := {
   toFun := (fun x => ⟨x, by
