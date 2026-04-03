@@ -1,4 +1,4 @@
--- Primarily Trufas' work, with some changes to the proofs, and to apply to Goedel logic instead
+-- Trufas' work, with some changes to the proofs, and to apply to Goedel logic instead
 
 import GoedelLogic.Filters
 import GoedelLogic.Formula

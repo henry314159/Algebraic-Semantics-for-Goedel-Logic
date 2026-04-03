@@ -108,7 +108,6 @@ noncomputable instance decidable_lt (I : α → S N) (n : S N) :
   DecidablePred (fun a => a < I.invFun n) := by
   unfold DecidablePred
   intro a
-  simp
   by_cases h : a < I.invFun n
   · exact isTrue h
   · exact isFalse h
@@ -117,7 +116,6 @@ noncomputable instance decidable_gt (I : α → S N) (n : S N) :
   DecidablePred (fun a => I.invFun n < a) := by
   unfold DecidablePred
   intro a
-  simp
   by_cases h : I.invFun n < a
   · exact isTrue h
   · exact isFalse h

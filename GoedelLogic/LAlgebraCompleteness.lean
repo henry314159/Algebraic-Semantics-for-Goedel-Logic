@@ -1,4 +1,4 @@
--- Primarily Trufas' work, with some changes to the proofs, and
+-- Trufas' work, with some changes to the proofs, and
 -- changes to make it apply to Goedel logic
 
 import GoedelLogic.LAlgebraSoundness

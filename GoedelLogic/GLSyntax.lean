@@ -1,4 +1,4 @@
--- Primarily Trufas' work, with some changes to the proofs, and adapted to
+-- Trufas' work, with some changes to the proofs, and adapted to
 -- Goedel logic by adding a linearity axiom where necessary.
 
 -- Changed imports for new Mathlib version

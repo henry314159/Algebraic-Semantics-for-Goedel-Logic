@@ -1,4 +1,4 @@
--- Primarily Trufas' work, with some changes to the proofs, an additional
+-- Trufas' work, with some changes to the proofs, an additional
 -- definition of an LAlgebra.
 
 -- Changed imports for new Mathlib version

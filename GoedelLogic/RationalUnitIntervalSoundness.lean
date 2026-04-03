@@ -158,7 +158,7 @@ theorem mean_eq_one (a : Q) (b : Q) : mean a b = ⟨1, one_mem_Q⟩ ↔ a = ⟨1
       rw [eq_sub_iff_add_eq]
       exact h
     have hb' : 2 - (b:ℚ) ≤ 1 := by
-      have temp : 2-(b:ℚ) = (a:ℚ) := by simp [temp]
+      have temp : 2-(b:ℚ) = (a:ℚ) := by simp only [temp]
       have temp : 2-(b:ℚ) ≤ (a:ℚ) := by simp [temp]
       exact le_trans temp ha
     have hb' : 1 ≤ (b:ℚ) := by
@@ -181,7 +181,7 @@ theorem mean_eq_one (a : Q) (b : Q) : mean a b = ⟨1, one_mem_Q⟩ ↔ a = ⟨1
       rw [eq_sub_iff_add_eq, add_comm]
       exact h
     have ha' : 2 - (a:ℚ) ≤ 1 := by
-      have temp : 2-(a:ℚ) = (b:ℚ) := by simp [temp]
+      have temp : 2-(a:ℚ) = (b:ℚ) := by simp only [temp]
       have temp : 2-(a:ℚ) ≤ (b:ℚ) := by simp [temp]
       exact le_trans temp hb
     have ha' : 1 ≤ (a:ℚ) := by

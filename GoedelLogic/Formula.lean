@@ -1,4 +1,4 @@
--- Primarily Trufas' work, with some changes to the proofs to fit my style
+-- Trufas' work, with some changes to the proofs to fit my style
 
 import Mathlib.Data.Countable.Basic
 import Mathlib.Data.Fintype.EquivFin
