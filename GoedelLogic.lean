@@ -1,3 +1,11 @@
--- This module serves as the root of the `GoedelLogic` library.
--- Import modules here that should be built as part of the library.
-import GoedelLogic.Basic
+import GoedelLogic.Formula
+import GoedelLogic.Filters
+import GoedelLogic.GLSyntax
+import GoedelLogic.LAlgebraSoundness
+import GoedelLogic.LAlgebraCompleteness
+import GoedelLogic.ChainSoundness
+import GoedelLogic.ChainCompleteness
+import GoedelLogic.RationalUnitIntervalSoundness
+import GoedelLogic.RationalUnitIntervalCompleteness
+import GoedelLogic.RealUnitIntervalSoundness
+import GoedelLogic.RealUnitIntervalCompleteness
