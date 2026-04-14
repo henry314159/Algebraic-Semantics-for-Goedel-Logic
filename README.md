@@ -2,7 +2,7 @@
 
 An extension of https://github.com/DafinaTrufas/Intuitionistic-Logic-Lean to Goedel logic.
 
-The following files are minor modifications of work found in the above repository:
+The following files are modifications of work found in the above repository:
 "Filters.lean",
 "Formula.lean",
 "GLSyntax.lean",
