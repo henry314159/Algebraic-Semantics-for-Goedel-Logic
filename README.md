@@ -13,7 +13,7 @@ The other files are my own original work, following the propositional part of Al
 
 To install this project:
 1. Install Lean 4 https://lean-lang.org/install/manual/
-2. Download the zip file
+2. Download the zip file for this project
 3. Extract the contents of the zip file
 4. Open command prompt (or equivalent), and navigate to the extracted folder
 5. Note that you may have to enter a further subfolder, just make sure you are in the folder with files such as "Main.lean" and "GoedelLogic.lean"
