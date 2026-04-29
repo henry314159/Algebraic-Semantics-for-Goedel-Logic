@@ -1,5 +1,5 @@
--- Trufas' work, with some changes to the proofs, an additional
--- definition of an LAlgebra.
+-- Adapted from: https://github.com/DafinaTrufas/Intuitionistic-Logic-Lean
+-- Author: Dafina Trufaș
 
 -- Changed imports for new Mathlib version
 import Mathlib.Data.Set.Basic
