@@ -379,7 +379,7 @@ lemma chain_contradicting_valuation (ϕ : Formula) : ¬Nonempty (Γ ⊢ ϕ) →
     exact notTrueInLTAlgebra
 
   -- there exists a filter F that separates top and ϕ
-  have hF : ∃F, prime_filter F ∧ ϕModΓ ∉ F := super_prime_filter_cor1 ϕModΓ hNotTop
+  have hF : ∃F, prime_filter F ∧ ϕModΓ ∉ F := super_prime_filter_cor ϕModΓ hNotTop
   obtain ⟨F, hF1, hF2⟩ := hF
   let valuation := @filter_quot_var _ _ hF1.left.left
 

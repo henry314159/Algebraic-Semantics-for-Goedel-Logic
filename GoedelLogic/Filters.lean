@@ -24,61 +24,9 @@ lemma top_mem_filter (F : Set α) (Hfilter : filter F) : ⊤ ∈ F :=
     rcases Haux with ⟨x, Hxin⟩
     exact Hfilter.2.2 x ⊤ Hxin le_top
 
-def deductive_system (F : Set α) := ⊤ ∈ F ∧ (∀ (x y : α), x ∈ F → x ⇨ y ∈ F → y ∈ F)
-
-lemma filter_dedsyst_equiv {x y : α} (F : Set α) : filter F ↔ deductive_system F :=
-  by
-    apply Iff.intro
-    · intro Hf
-      rcases Hf with ⟨Hnempty, ⟨Hf1, Hf2⟩⟩
-      let Haux := Hf1 x (x ⇨ y)
-      rw [inf_himp] at Haux
-      apply And.intro
-      · unfold Set.Nonempty at Hnempty
-        rcases Hnempty with ⟨x, Hxin⟩
-        exact (Hf2 x ⊤) Hxin le_top
-      · intros x y Hxin Himpin
-        let Haux' := (Hf1 x (x ⇨ y)) Hxin Himpin
-        rw [inf_himp] at Haux'
-        exact Hf2 (x ⊓ y) y Haux' inf_le_right
-    · intro Hd
-      unfold filter
-      rcases Hd with ⟨Ht, Hxy⟩
-      apply And.intro
-      · exists ⊤
-      · have Haux : ∀ (x y : α), x ∈ F → x ≤ y → y ∈ F :=
-          by
-            intros x y Hxin Hle
-            rw [<-himp_eq_top_iff] at Hle
-            rw [<-Hle] at Ht
-            exact Hxy x y Hxin Ht
-        apply And.intro
-        · intros x y Hxin Hyin
-          have Haux : x ⇨ y ∈ F :=
-            by
-              have Haux' : y ≤ x ⇨ y :=
-                by
-                  rw [le_himp_iff]
-                  exact inf_le_left
-              exact Haux y (x ⇨ y) Hyin Haux'
-          have Haux' : x ⇨ y = x ⇨ x ⊓ y := by rw [himp_inf_distrib]; simp only [himp_self,
-            le_top, inf_of_le_right]
-          rw [Haux'] at Haux
-          exact Hxy x (x ⊓ y) Hxin Haux
-        · exact Haux
-
 abbrev X_filters (X : Set α) := {F // filter F ∧ X ⊆ F}
 
 def X_gen_filter (X : Set α) := {x | ∀ (F : X_filters X), x ∈ F.1}
-
-lemma X_subset_X_gen_filter (X : Set α) : X ⊆ X_gen_filter X :=
-  by
-    rw [Set.subset_def]
-    intro x Hxin
-    simp only [X_gen_filter, Subtype.forall, and_imp, Set.mem_setOf_eq]
-    intro F' _ Hsubset
-    apply Set.mem_of_subset_of_mem
-    assumption'
 
 lemma X_gen_filter_filter (X : Set α) (Hnempty : Set.Nonempty X) : filter (X_gen_filter X) :=
   by
@@ -267,33 +215,10 @@ lemma mem_gen_ins_filter (F : Set α) (Hfilter : filter F) :
       · rw [Hx] at Hinf_le
         exact Hinf_le
 
-lemma himp_not_mem (F : Set α) (Hfilter : filter F) (Himp_not_mem : x ⇨ y ∉ F) :
-  y ∉ X_gen_filter (F ∪ {x}) :=
-  by
-    intro Hcontra
-    have Haux : ∃ (z : α), z ∈ F /\ x ⊓ z ≤ y :=
-      by apply mem_gen_ins_filter F Hfilter Hcontra
-    rcases Haux with ⟨z, ⟨Hzin, Hglb⟩⟩
-    rw [inf_comm, <-le_himp_iff] at Hglb
-    exact Himp_not_mem ((Hfilter.right).right z (x ⇨ y) Hzin Hglb)
-
 def proper_filter (F : Set α) := filter F ∧ ⊥ ∉ F
-
-lemma himp_not_mem_proper (F : Set α) (Hfilter : filter F) (Himp_not_mem : xᶜ ∉ F) :
-  proper_filter (X_gen_filter (F ∪ {x})) :=
-  by
-    apply And.intro
-    · simp
-      exact X_gen_filter_filter (insert x F) (Set.insert_nonempty x F)
-    · apply himp_not_mem
-      · exact Hfilter
-      · rw [himp_bot]
-        exact Himp_not_mem
 
 def prime_filter (F : Set α) :=
   proper_filter F ∧ (∀ (x y : α), x ⊔ y ∈ F → x ∈ F ∨ y ∈ F)
-
-def prime_filters := {F | @prime_filter α _ F}
 
 def X_filters_not_cont_x (x : α) := {F | filter F ∧ x ∉ F}
 
@@ -457,7 +382,7 @@ lemma super_prime_filter (x : α) (F : Set α) (Hfilter : @filter α _ F) (Hnoti
     · exact And.intro HFsubset (HPin.right)
 
 -- useful for finding the prime filter needed to prove completeness for chains
-lemma super_prime_filter_cor1 (x : α) (Hnottop : x ≠ ⊤) :
+lemma super_prime_filter_cor (x : α) (Hnottop : x ≠ ⊤) :
   ∃ (P : Set α), @prime_filter α _ P ∧ x ∉ P :=
   by
     let Htopfilter : @filter α _ {⊤} :=
@@ -472,23 +397,3 @@ lemma super_prime_filter_cor1 (x : α) (Hnottop : x ≠ ⊤) :
     let Haux := @super_prime_filter α _ x {⊤} Htopfilter Hnottop
     rcases Haux with ⟨P, ⟨_, ⟨_, _⟩⟩⟩
     exists P
-
-lemma super_prime_filter_cor2 : Set.sInter (@prime_filters α _) = {⊤} :=
-  by
-    rw [Set.ext_iff]
-    intro x
-    apply Iff.intro
-    · intro Hincap
-      simp only [Set.mem_singleton_iff]
-      by_cases Heqtop : x = ⊤
-      · exact Heqtop
-      · exfalso
-        let Haux := @super_prime_filter_cor1 α _ x Heqtop
-        rcases Haux with ⟨P, ⟨Hprime, Hxnotin⟩⟩
-        have Haux' : P ∈ prime_filters := by simp only [prime_filters]; assumption
-        exact Hxnotin (Hincap P Haux')
-    · intro Htop
-      rw [Htop]
-      intro F Hprime
-      rcases Hprime with ⟨⟨Hfilter, _⟩, _⟩
-      exact @top_mem_filter α _ F Hfilter
