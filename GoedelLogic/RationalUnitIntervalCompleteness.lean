@@ -154,7 +154,7 @@ lemma hB {I : α → S N} {bij : I.Bijective}
     rw [←temp] at hn
     simp at hn
 
-noncomputable def C {N : WithTop ℕ} (I : α → S N) (n : S N) : Finset α :=
+noncomputable def C (I : α → S N) (n : S N) : Finset α :=
   (A I n).filter (fun a => I.invFun n < a)
 
 lemma hC {I : α → S N} {bij : I.Bijective}
