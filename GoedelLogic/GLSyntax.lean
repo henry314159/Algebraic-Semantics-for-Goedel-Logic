@@ -1,5 +1,5 @@
--- Trufas' work, with some changes to the proofs, and adapted to
--- Goedel logic by adding a linearity axiom where necessary.
+-- Adapted from: https://github.com/DafinaTrufas/Intuitionistic-Logic-Lean
+-- Author: Dafina Trufaș
 
 -- Changed imports for new Mathlib version
 import GoedelLogic.Formula
