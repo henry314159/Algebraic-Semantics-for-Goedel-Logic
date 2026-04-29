@@ -1,5 +1,5 @@
--- Trufas' work, with some changes to the proofs, and
--- changes to make it apply to Goedel logic
+-- Adapted from: https://github.com/DafinaTrufas/Intuitionistic-Logic-Lean
+-- Author: Dafina Trufaș
 
 import GoedelLogic.LAlgebraSoundness
 

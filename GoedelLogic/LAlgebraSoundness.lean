@@ -1,4 +1,5 @@
--- Trufas' work, with some changes to the proofs, and to apply to Goedel logic instead
+-- Adapted from: https://github.com/DafinaTrufas/Intuitionistic-Logic-Lean
+-- Author: Dafina Trufaș
 
 import GoedelLogic.Filters
 import GoedelLogic.Formula
