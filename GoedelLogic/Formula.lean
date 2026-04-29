@@ -1,4 +1,5 @@
--- Trufas' work, with some changes to the proofs to fit my style
+-- Adapted from: https://github.com/DafinaTrufas/Intuitionistic-Logic-Lean
+-- Author: Dafina Trufaș
 
 import Mathlib.Data.Countable.Basic
 import Mathlib.Data.Fintype.EquivFin
