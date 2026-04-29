@@ -319,8 +319,6 @@ lemma quotient_chain {hF : filter F}: prime_filter F → chain (Quotient (setoid
     exact top_mem_filter (Hfilter := hF)
   exact p.right _ _ h1
 
---def ideal (I : Set α) := Set.Nonempty I ∧ ∀ (x y : α), x ∈ I → y ∈ I → x ⊔ y ∈ I
-
 variable {F : Set (Quotient (@setoid_formula Γ))}
 variable {hF : filter F}
 
